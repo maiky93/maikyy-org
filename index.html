@@ -18,7 +18,6 @@
             position: relative;
             overflow: hidden;
         }
-        /* For GIF background */
         #background-gif {
             position: absolute;
             width: 100%;
@@ -26,7 +25,6 @@
             object-fit: cover;
             z-index: 1;
         }
-        /* For Video background */
         #background-video {
             position: absolute;
             width: 100%;
@@ -34,45 +32,74 @@
             object-fit: cover;
             z-index: 1;
         }
-        #clock {
-            position: absolute;
-            bottom: 75px;
-            left: 10px;
+        #clock, #date, #weather {
             color: white;
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 42px;
+            position: absolute;
+            left: 10px;
             z-index: 2;
+            text-shadow:
+                1px 1px 0 #000,
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                0 1px 0 #000,
+                1px 0 0 #000,
+                0 -1px 0 #000,
+                -1px 0 0 #000;
+        }
+        #clock {
+            bottom: 125px;
+            font-size: 42px;
         }
         #date {
-            position: absolute;
-            bottom: 120px;
-            left: 10px;
-            color: white;
-            font-family: Arial, Helvetica, sans-serif;
+            bottom: 170px;
             font-size: 32px;
-            z-index: 2;
+        }
+        #weather {
+            bottom: 80px;
+            font-size: 32px;
         }
     </style>
 </head>
 <body>
     <div id="display-area">
-
-        <!-- For GIF: -->
-        <img id="background-gif" src="your-gif-file.gif" alt="background animation">
+        <img id="background-gif" src="https://github.com/maiky93/maikyy-org/blob/main/media/gifs/winter-2540.gif?raw=true" alt="background animation">
         
-        <!-- For MP4: -->
         <video id="background-video" autoplay loop muted playsinline>
             <source src="your-video-file.mp4" type="video/mp4">
         </video>
 
         <div id="date"></div>
         <div id="clock"></div>
+        <div id="weather"></div>
     </div>
     <script>
+        // Your OpenWeatherMap API key
+        const API_KEY = 'f0436ea441ee727e737ca8ad122414f4';
+        const CITY = 'Leiden'; // Replace with your city
+        const COUNTRY = 'NL';
+
+        async function getWeather() {
+            try {
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${CITY},${COUNTRY}&units=metric&lang=nl&appid=${API_KEY}`);
+                const data = await response.json();
+                
+                const temp = Math.round(data.main.temp);
+                const feelsLike = Math.round(data.main.feels_like);
+                const description = data.weather[0].description;
+                
+                document.getElementById('weather').textContent = 
+                    `${temp}°C (voelt als ${feelsLike}°C) - ${description}`;
+            } catch (error) {
+                console.error('Error fetching weather:', error);
+                document.getElementById('weather').textContent = '...';
+            }
+        }
+
         function updateDateTime() {
             const now = new Date();
             
-            // Time formatting
             const time = now.toLocaleTimeString('nl-NL', { 
                 hour12: false,
                 hour: '2-digit',
@@ -80,7 +107,6 @@
                 second: '2-digit'
             });
             
-            // Date formatting
             const dateString = now.toLocaleDateString('nl-NL', {
                 weekday: 'long',
                 day: 'numeric',
@@ -92,8 +118,13 @@
             document.getElementById('date').textContent = dateString;
         }
         
+        // Initial calls
         updateDateTime();
+        getWeather();
+
+        // Set up intervals
         setInterval(updateDateTime, 1000);
+        setInterval(getWeather, 300000); // Update weather every 5 minutes
     </script>
 </body>
 </html>
