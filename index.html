@@ -337,7 +337,7 @@
         
         function updateScheduleInterval(currentActivity) {
             clearInterval(scheduleInterval);
-            const frequency = currentActivity?.type === 3 ? 1000 : 60000; // 1 second for cleaning, 1 minute otherwise
+            const frequency = 1000; // Update every second
             scheduleInterval = setInterval(updateSchedule, frequency);
         }
         
