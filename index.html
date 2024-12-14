@@ -71,6 +71,9 @@
             font-family: Arial, Helvetica, sans-serif;
             display: flex;
             flex-direction: column;
+            border-style: solid;
+            border-width: 1px;
+            border-color: rgba(0, 0, 0, 0.5);
             gap: 15px;
             padding: 5px;
             box-sizing: border-box;
@@ -81,7 +84,9 @@
             align-items: center;
         }
         .schedule-item {
+            position: relative;
             display: flex;
+            top: 2px;
             align-items: center;
             font-size: 18px;
             text-shadow:
@@ -94,16 +99,30 @@
                 0 -1px 0 #000,
                 -1px 0 0 #000;
         }
-        .schedule-label {
-            font-weight: bold;
-            margin-right: 10px;
-            width: 120px;
-        }
+
         .activity-block {
+            position: relative; /* Add this */
+            z-index: 2;        /* Add this */
+            top: -1px;
             padding: 5px 10px;
             border-radius: 4px;
             margin-right: 10px;
             background-color: rgba(var(--block-color-rgb), 0.5) !important;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            height: 138%;
+            background-color: rgba(0, 0, 0, 0.25);
+            border-radius: 4px;
+            z-index: -1;
+        }
+        .schedule-label {
+            font-weight: bold;
+            margin-right: 10px;
+            width: 120px;
         }
     </style>
 </head>
@@ -245,6 +264,24 @@
                 return { currentActivity, nextActivity };
             }
 
+            function calculateProgress(startTime, endTime) {
+                const [startHour, startMinute] = startTime.split(':').map(Number);
+                const [endHour, endMinute] = endTime.split(':').map(Number);
+                
+                const now = new Date();
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+                
+                const startMinutes = startHour * 60 + startMinute;
+                const endMinutes = endHour * 60 + endMinute;
+                const currentMinutes = currentHour * 60 + currentMinute;
+                
+                const totalDuration = endMinutes - startMinutes;
+                const elapsed = currentMinutes - startMinutes;
+                
+                return Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+            }
+
             function updateTrackDisplay(trackPrefix, activities) {
                 const currentElement = document.getElementById(`${trackPrefix}-current-activity`);
                 const nextElement = document.getElementById(`${trackPrefix}-next-activity`);
@@ -253,11 +290,30 @@
                     const activity = activityDetails[activities.currentActivity.type] || { name: "Onbekend", color: "#cccccc" };
                     const rgbColor = hexToRGB(activity.color);
 
+                    // Find start time by looking at previous end time
+                    const daySchedule = schedule[getCurrentDayName()]?.[trackPrefix === 'hockey' ? 'Hockeybaan' : 'Rondbaan'] || [];
+                    let startTime = '00:00';
+                    for (let i = 0; i < daySchedule.length; i++) {
+                        const [start, end, type] = daySchedule[i];
+                        if (end === activities.currentActivity.endTime && type === activities.currentActivity.type) {
+                            startTime = start;
+                            break;
+                        }
+                    }
+
+                    const progress = calculateProgress(startTime, activities.currentActivity.endTime);
+                    
                     if (activity.name === "Dweilen") {
                         const timeLeft = formatTimeLeft(activities.currentActivity.endTime);
-                        currentElement.innerHTML = `<span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> nog ${timeLeft}`;
+                        currentElement.innerHTML = `
+                            <div class="progress-bar" style="width: ${progress}%"></div>
+                            <span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> nog ${timeLeft}
+                        `;
                     } else {
-                        currentElement.innerHTML = `<span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> tot ${activities.currentActivity.endTime}`;
+                        currentElement.innerHTML = `
+                            <div class="progress-bar" style="width: ${progress}%"></div>
+                            <span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> tot ${activities.currentActivity.endTime}
+                        `;
                     }
                 } else {
                     currentElement.textContent = "Geen activiteit";
