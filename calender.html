@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        #debug-info {
+            background: #333;
+            color: #fff;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        #html-structure {
+            margin: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="debug-info"></div>
+    <div id="html-structure"></div>
+
+    <script>
+        const calendarUrl = 'https://outlook.live.com/calendar/0/published/e20632f190a94e0eb7260ad4d9aaf35f@ijshaldevliet.nl/8d6c8fbb5ce44c76b03366f2ce4405c511850793726668484833/calendar.html/';
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+
+        function debug(message) {
+            document.getElementById('debug-info').textContent += message + '\n';
+        }
+
+        async function fetchCalendarHtml() {
+            debug('Fetching calendar HTML...');
+            try {
+                const response = await fetch(proxyUrl + encodeURIComponent(calendarUrl));
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const html = await response.text();
+                debug(`Received ${html.length} characters of HTML`);
+                
+                // Show first 500 characters of raw HTML for debugging
+                debug('\nFirst 500 characters of raw HTML:');
+                debug(html.substring(0, 500));
+                
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Let's look at all div elements and their classes
+                debug('\nExamining div elements and their classes:');
+                const divs = doc.getElementsByTagName('div');
+                const classes = new Set();
+                Array.from(divs).forEach(div => {
+                    if (div.className) {
+                        classes.add(div.className);
+                    }
+                });
+                debug('\nUnique class names found:');
+                classes.forEach(className => debug(className));
+
+                // Try looking for any time elements
+                const timeElements = doc.getElementsByTagName('time');
+                debug(`\nFound ${timeElements.length} time elements`);
+
+                // Try looking for any button elements
+                const buttonElements = doc.getElementsByTagName('button');
+                debug(`\nFound ${buttonElements.length} button elements`);
+
+                // Show all text content from specific elements
+                debug('\nText content from elements with text:');
+                Array.from(doc.body.getElementsByTagName('*')).forEach(element => {
+                    if (element.textContent.trim()) {
+                        debug(`${element.tagName}: ${element.textContent.trim().substring(0, 100)}`);
+                    }
+                });
+
+                // Display HTML structure in a more readable format
+                document.getElementById('html-structure').innerHTML = '<pre>' + 
+                    html.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
+
+            } catch (error) {
+                debug('Error: ' + error.message);
+            }
+        }
+
+        // Start fetching
+        fetchCalendarHtml();
+    </script>
+</body>
+</html>

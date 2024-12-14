@@ -71,14 +71,19 @@
             font-family: Arial, Helvetica, sans-serif;
             display: flex;
             flex-direction: column;
+            gap: 15px;
             padding: 5px;
             box-sizing: border-box;
+        }
+        .schedule-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .schedule-item {
             display: flex;
             align-items: center;
-            margin: 5px 0;
-            font-size: 20px;
+            font-size: 18px;
             text-shadow:
                 1px 1px 0 #000,
                 -1px -1px 0 #000,
@@ -89,16 +94,16 @@
                 0 -1px 0 #000,
                 -1px 0 0 #000;
         }
+        .schedule-label {
+            font-weight: bold;
+            margin-right: 10px;
+            width: 120px;
+        }
         .activity-block {
             padding: 5px 10px;
             border-radius: 4px;
             margin-right: 10px;
             background-color: rgba(var(--block-color-rgb), 0.5) !important;
-        }
-        .schedule-label {
-            font-weight: bold;
-            margin-right: 10px;
-            width: 100px;
         }
     </style>
 </head>
@@ -110,13 +115,23 @@
         <div id="clock"></div>
         <div id="weather"></div>
         <div id="schedule">
-            <div class="schedule-item">
-                <span class="schedule-label">Huidig:</span>
-                <span id="current-activity"></span>
+            <div class="schedule-row">
+                <div class="schedule-item">
+                    <span class="schedule-label">Rondbaan:</span>
+                    <span id="rond-current-activity"></span>
+                </div>
+                <div class="schedule-item">
+                    <span id="rond-next-activity"></span>
+                </div>
             </div>
-            <div class="schedule-item">
-                <span class="schedule-label">Hierna:</span>
-                <span id="next-activity"></span>
+            <div class="schedule-row">
+                <div class="schedule-item">
+                    <span class="schedule-label">Hockeybaan:</span>
+                    <span id="hockey-current-activity"></span>
+                </div>
+                <div class="schedule-item">
+                    <span id="hockey-next-activity"></span>
+                </div>
             </div>
         </div>
     </div>
@@ -194,85 +209,90 @@
             const currentHours = now.getHours();
             const currentMinutes = now.getMinutes();
             const currentTimeInMinutes = currentHours * 60 + currentMinutes;
-
             const dayName = getCurrentDayName();
-            const daySchedule = schedule[dayName]?.Hockeybaan || [];
 
-            let currentActivity = null;
-            let nextActivity = null;
+            function getTrackActivities(trackName) {
+                const daySchedule = schedule[dayName]?.[trackName] || [];
+                let currentActivity = null;
+                let nextActivity = null;
 
-            for (let i = 0; i < daySchedule.length; i++) {
-                const [startTime, endTime, activityType] = daySchedule[i];
-                
-                const [startHour, startMinute] = startTime.split(':').map(Number);
-                const [endHour, endMinute] = endTime.split(':').map(Number);
-                const startTimeInMinutes = startHour * 60 + startMinute;
-                const endTimeInMinutes = endHour * 60 + endMinute;
+                for (let i = 0; i < daySchedule.length; i++) {
+                    const [startTime, endTime, activityType] = daySchedule[i];
+                    
+                    const [startHour, startMinute] = startTime.split(':').map(Number);
+                    const [endHour, endMinute] = endTime.split(':').map(Number);
+                    const startTimeInMinutes = startHour * 60 + startMinute;
+                    const endTimeInMinutes = endHour * 60 + endMinute;
 
-                if (currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes < endTimeInMinutes) {
-                    currentActivity = {
-                        type: activityType,
-                        endTime: endTime
-                    };
-                    if (i < daySchedule.length - 1) {
-                        nextActivity = {
-                            type: daySchedule[i + 1][2],
-                            startTime: daySchedule[i + 1][0],
-                            endTime: daySchedule[i + 1][1]
+                    if (currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes < endTimeInMinutes) {
+                        currentActivity = {
+                            type: activityType,
+                            endTime: endTime
                         };
+                        if (i < daySchedule.length - 1) {
+                            nextActivity = {
+                                type: daySchedule[i + 1][2],
+                                startTime: daySchedule[i + 1][0],
+                                endTime: daySchedule[i + 1][1]
+                            };
+                        }
+                        break;
                     }
-                    break;
                 }
+                return { currentActivity, nextActivity };
             }
 
-            // Update display
-            const currentElement = document.getElementById('current-activity');
-            const nextElement = document.getElementById('next-activity');
+            function updateTrackDisplay(trackPrefix, activities) {
+                const currentElement = document.getElementById(`${trackPrefix}-current-activity`);
+                const nextElement = document.getElementById(`${trackPrefix}-next-activity`);
 
-            if (currentActivity) {
-                const activity = activityDetails[currentActivity.type] || { name: "Onbekend", color: "#cccccc" };
-                const rgbColor = hexToRGB(activity.color);
+                if (activities.currentActivity) {
+                    const activity = activityDetails[activities.currentActivity.type] || { name: "Onbekend", color: "#cccccc" };
+                    const rgbColor = hexToRGB(activity.color);
 
-                if (activity.name === "Dweilen") {
-                    // Cleaning mode
-                    const timeLeft = formatTimeLeft(currentActivity.endTime);
-                    currentElement.innerHTML = `<span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> nog ${timeLeft}`;
+                    if (activity.name === "Dweilen") {
+                        const timeLeft = formatTimeLeft(activities.currentActivity.endTime);
+                        currentElement.innerHTML = `<span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> nog ${timeLeft}`;
+                    } else {
+                        currentElement.innerHTML = `<span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> tot ${activities.currentActivity.endTime}`;
+                    }
                 } else {
-                    // Schedule mode
-                    currentElement.innerHTML = `<span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> tot ${currentActivity.endTime}`;
+                    currentElement.textContent = "Geen activiteit";
                 }
-            } else {
-                currentElement.textContent = "Geen activiteit";
-            }
 
-            if (nextActivity) {
-                // Skip "Dweilen" in next activity display
-                if (nextActivity.type === 3) {
-                    const daySchedule = schedule[getCurrentDayName()]?.Hockeybaan || [];
-                    for (let i = 0; i < daySchedule.length; i++) {
-                        const [startTime, endTime, activityType] = daySchedule[i];
-                        if (startTime === nextActivity.startTime && activityType === 3) {
-                            if (i + 1 < daySchedule.length) {
-                                nextActivity = {
-                                    type: daySchedule[i + 1][2],
-                                    startTime: daySchedule[i + 1][0],
-                                    endTime: daySchedule[i + 1][1]
-                                };
+                if (activities.nextActivity) {
+                    if (activities.nextActivity.type === 3) {
+                        const daySchedule = schedule[dayName]?.[trackPrefix === 'hockey' ? 'Hockeybaan' : 'Rondbaan'] || [];
+                        for (let i = 0; i < daySchedule.length; i++) {
+                            const [startTime, endTime, activityType] = daySchedule[i];
+                            if (startTime === activities.nextActivity.startTime && activityType === 3) {
+                                if (i + 1 < daySchedule.length) {
+                                    activities.nextActivity = {
+                                        type: daySchedule[i + 1][2],
+                                        startTime: daySchedule[i + 1][0],
+                                        endTime: daySchedule[i + 1][1]
+                                    };
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
-                }
 
-                const activity = activityDetails[nextActivity.type] || { name: "Onbekend", color: "#cccccc" };
-                const rgbColor = hexToRGB(activity.color);
-                nextElement.innerHTML = `<span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> ${nextActivity.startTime} - ${nextActivity.endTime}`;
-            } else {
-                nextElement.textContent = "Geen volgende activiteit";
+                    const activity = activityDetails[activities.nextActivity.type] || { name: "Onbekend", color: "#cccccc" };
+                    const rgbColor = hexToRGB(activity.color);
+                    nextElement.innerHTML = `<span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> ${activities.nextActivity.startTime} - ${activities.nextActivity.endTime}`;
+                } else {
+                    nextElement.textContent = "Geen volgende activiteit";
+                }
             }
 
-            // Update interval based on current activity
-            updateScheduleInterval(currentActivity);
+            updateTrackDisplay('hockey', getTrackActivities('Hockeybaan'));
+            updateTrackDisplay('rond', getTrackActivities('Rondbaan'));
+
+            const hockeyActivities = getTrackActivities('Hockeybaan');
+            const rondActivities = getTrackActivities('Rondbaan');
+            const isCleaning = (hockeyActivities.currentActivity?.type === 3 || rondActivities.currentActivity?.type === 3);
+            updateScheduleInterval(isCleaning ? {type: 3} : null);
         }
 
         async function getWeather() {
