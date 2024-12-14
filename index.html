@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            background: #eee;
+        }
+        #display-area {
+            width: 768px;
+            height: 512px;
+            background: black;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border: 1px solid red;
+            position: relative;
+            overflow: hidden;
+        }
+        /* For GIF background */
+        #background-gif {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        /* For Video background */
+        #background-video {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        #clock {
+            position: absolute;
+            bottom: 75px;
+            left: 10px;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 42px;
+            z-index: 2;
+        }
+        #date {
+            position: absolute;
+            bottom: 120px;
+            left: 10px;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 32px;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div id="display-area">
+
+        <!-- For GIF: -->
+        <img id="background-gif" src="your-gif-file.gif" alt="background animation">
+        
+        <!-- For MP4: -->
+        <video id="background-video" autoplay loop muted playsinline>
+            <source src="your-video-file.mp4" type="video/mp4">
+        </video>
+
+        <div id="date"></div>
+        <div id="clock"></div>
+    </div>
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            
+            // Time formatting
+            const time = now.toLocaleTimeString('nl-NL', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            // Date formatting
+            const dateString = now.toLocaleDateString('nl-NL', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            
+            document.getElementById('clock').textContent = time;
+            document.getElementById('date').textContent = dateString;
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    </script>
+</body>
+</html>
