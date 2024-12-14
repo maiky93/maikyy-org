@@ -1,3 +1,36 @@
+// Add this at the beginning of script.js
+
+async function loadComponent(containerId, componentPath) {
+    try {
+        const response = await fetch(componentPath);
+        const html = await response.text();
+        document.getElementById(containerId).innerHTML = html;
+    } catch (error) {
+        console.error(`Error loading component ${componentPath}:`, error);
+    }
+}
+
+// Load all components when the page starts
+async function initializeComponents() {
+    await Promise.all([
+        loadComponent('datetime-container', 'components/datetime.html'),
+        loadComponent('weather-container', 'components/weather.html'),
+        loadComponent('schedule-container', 'components/schedule.html')
+    ]);
+    
+    // After components are loaded, initialize the app
+    updateDateTime();
+    getWeather();
+    updateSchedule();
+
+    // Set up intervals
+    setInterval(updateDateTime, 1000);
+    setInterval(getWeather, 1800000);
+}
+
+// Call this instead of the direct initialization
+document.addEventListener('DOMContentLoaded', initializeComponents);
+
 const API_KEY = 'f0436ea441ee727e737ca8ad122414f4';
 const CITY = 'Leiden';
 const COUNTRY = 'NL';
