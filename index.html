@@ -7,9 +7,30 @@
 <body>
     <div id="display-area">
         <img id="background-gif" src="https://github.com/maiky93/maikyy-org/blob/main/media/gifs/winter-2540.gif?raw=true" alt="background animation">
-        <div id="datetime-container"></div>
-        <div id="weather-container"></div>
-        <div id="schedule-container"></div>
+        
+        <div id="date"></div>
+        <div id="clock"></div>
+        <div id="weather"></div>
+        <div id="schedule">
+            <div class="schedule-row">
+                <div class="schedule-item">
+                    <span class="schedule-label">Rondbaan:</span>
+                    <span id="rond-current-activity"></span>
+                </div>
+                <div class="schedule-item">
+                    <span id="rond-next-activity"></span>
+                </div>
+            </div>
+            <div class="schedule-row">
+                <div class="schedule-item">
+                    <span class="schedule-label">Hockeybaan:</span>
+                    <span id="hockey-current-activity"></span>
+                </div>
+                <div class="schedule-item">
+                    <span id="hockey-next-activity"></span>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
