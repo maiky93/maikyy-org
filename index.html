@@ -84,13 +84,15 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
+            overflow: hidden;
         }
         .schedule-item {
             position: relative;
             display: flex;
             top: 2px;
             align-items: center;
-            font-size: 18px;
+            font-size: 20px;
+            z-index: 2;
             text-shadow:
                 1px 1px 0 #000,
                 -1px -1px 0 #000,
@@ -106,7 +108,7 @@
             position: relative; /* Add this */
             z-index: 2;        /* Add this */
             top: -1px;
-            padding: 5px 10px;
+            padding: 5px 20px;
             border-radius: 4px;
             margin-right: 10px;
             background-color: rgba(var(--block-color-rgb), 0.5) !important;
@@ -119,7 +121,7 @@
             height: 138%;
             background-color: rgba(0, 0, 0, 0.45);
             border-radius: 1px;
-            width: calc(100%+10px);
+            width: 100%;
             transform-origin: left;
             z-index: -1;
         }
@@ -286,42 +288,49 @@
                 return Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
             }
 
-            function updateTrackDisplay(trackPrefix, activities) {
-                const currentElement = document.getElementById(`${trackPrefix}-current-activity`);
-                const nextElement = document.getElementById(`${trackPrefix}-next-activity`);
+            function calculateDayProgress() {
+            const now = new Date();
+            const startOfDay = new Date(now);
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date(now);
+            endOfDay.setHours(23, 59, 59, 999);
+            
+            const totalDayMs = endOfDay - startOfDay;
+            const elapsedMs = now - startOfDay;
+            
+            return (elapsedMs / totalDayMs) * 100;
+        }
 
-                if (activities.currentActivity) {
-                    const activity = activityDetails[activities.currentActivity.type] || { name: "Onbekend", color: "#cccccc" };
-                    const rgbColor = hexToRGB(activity.color);
+        function updateTrackDisplay(trackPrefix, activities) {
+            const currentElement = document.getElementById(`${trackPrefix}-current-activity`);
+            const nextElement = document.getElementById(`${trackPrefix}-next-activity`);
 
-                    // Find start time by looking at previous end time
-                    const daySchedule = schedule[getCurrentDayName()]?.[trackPrefix === 'hockey' ? 'Hockeybaan' : 'Rondbaan'] || [];
-                    let startTime = '00:00';
-                    for (let i = 0; i < daySchedule.length; i++) {
-                        const [start, end, type] = daySchedule[i];
-                        if (end === activities.currentActivity.endTime && type === activities.currentActivity.type) {
-                            startTime = start;
-                            break;
-                        }
-                    }
+            if (activities.currentActivity) {
+                const activity = activityDetails[activities.currentActivity.type] || { name: "Onbekend", color: "#cccccc" };
+                const rgbColor = hexToRGB(activity.color);
 
-                    const progress = calculateProgress(startTime, activities.currentActivity.endTime);
-                    
-                    if (activity.name === "Dweilen") {
-                        const timeLeft = formatTimeLeft(activities.currentActivity.endTime);
-                        currentElement.innerHTML = `
-                            <div class="progress-bar" style="width: ${progress}%"></div>
-                            <span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> nog ${timeLeft}
-                        `;
-                    } else {
-                        currentElement.innerHTML = `
-                            <div class="progress-bar" style="width: ${progress}%"></div>
-                            <span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> tot ${activities.currentActivity.endTime}
-                        `;
-                    }
+                // Calculate day progress instead of activity progress
+                const dayProgress = calculateDayProgress();
+                
+                if (activity.name === "Dweilen") {
+                    const timeLeft = formatTimeLeft(activities.currentActivity.endTime);
+                    currentElement.innerHTML = `
+                        <div class="progress-bar" style="transform: translateX(-${100 - dayProgress}%)"></div>
+                        <span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> nog ${timeLeft}
+                    `;
                 } else {
-                    currentElement.textContent = "Geen activiteit";
+                    currentElement.innerHTML = `
+                        <div class="progress-bar" style="transform: translateX(-${100 - dayProgress}%)"></div>
+                        <span class="activity-block" style="--block-color-rgb: ${rgbColor}">${activity.name}</span> tot ${activities.currentActivity.endTime}
+                    `;
                 }
+            } else {
+                const dayProgress = calculateDayProgress();
+                currentElement.innerHTML = `
+                    <div class="progress-bar" style="transform: translateX(-${100 - dayProgress}%)"></div>
+                    <span>Geen activiteit</span>
+                `;
+            }
 
                 if (activities.nextActivity) {
                     if (activities.nextActivity.type === 3) {
