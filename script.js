@@ -231,10 +231,42 @@ function updateScheduleInterval(currentActivity) {
     scheduleInterval = setInterval(updateSchedule, frequency);
 }
 
+const bannerMessages = [
+    "ijshaldevliet.nl voor meer informatie",
+    "volg ons op instagram!",
+    // Add more messages as needed
+];
+
+function getRandomTime() {
+    // Random time between 10 and 40 minutes in milliseconds
+    return (Math.random() * (40 - 10) + 10) * 60 * 1000;
+}
+
+function showBanner() {
+    const banner = document.getElementById('sliding-banner');
+    const randomMessage = bannerMessages[Math.floor(Math.random() * bannerMessages.length)];
+    
+    banner.textContent = randomMessage;
+    banner.classList.add('sliding');
+
+    // Remove the sliding class after animation completes
+    banner.addEventListener('animationend', () => {
+        banner.classList.remove('sliding');
+        scheduleBanner(); // Schedule next banner
+    }, { once: true });
+}
+
+function scheduleBanner() {
+    const nextTime = getRandomTime();
+    setTimeout(showBanner, nextTime);
+    console.log(`Next banner scheduled in ${Math.round(nextTime/1000/60)} minutes`);
+}
+
 // Initial calls
 updateDateTime();
 getWeather();
 updateSchedule();
+scheduleBanner();
 
 // Set up intervals
 setInterval(updateDateTime, 1000);
