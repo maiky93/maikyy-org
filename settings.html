@@ -67,6 +67,8 @@
 </head>
 <body>
     <h1>Display Control Panel</h1>
+
+    <button onclick="testConnection()">Test Connection</button>
     
     <div id="connectionStatus" class="connection-status disconnected">
         Disconnected
@@ -115,30 +117,51 @@
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws`;
             
-            ws = new WebSocket(wsUrl);
+            console.log('Attempting to connect to:', wsUrl);
             
-            ws.onopen = () => {
-                console.log('Connected to WebSocket server');
-                updateConnectionStatus(true);
-                enableButtons(true);
-                reconnectAttempts = 0;
-            };
-            
-            ws.onclose = () => {
-                console.log('Disconnected from WebSocket server');
-                updateConnectionStatus(false);
-                enableButtons(false);
+            try {
+                ws = new WebSocket(wsUrl);
                 
-                // Attempt to reconnect if we haven't exceeded max attempts
-                if (reconnectAttempts < maxReconnectAttempts) {
-                    reconnectAttempts++;
-                    setTimeout(connectWebSocket, 5000);
-                }
-            };
-            
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
+                ws.onopen = () => {
+                    console.log('Successfully connected to WebSocket server');
+                    updateConnectionStatus(true);
+                    enableButtons(true);
+                    reconnectAttempts = 0;
+                };
+                
+                ws.onclose = (event) => {
+                    console.log('WebSocket closed with code:', event.code, 'reason:', event.reason);
+                    updateConnectionStatus(false);
+                    enableButtons(false);
+                    
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})`);
+                        setTimeout(connectWebSocket, 5000);
+                    }
+                };
+                
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    // Log additional connection details
+                    console.log('WebSocket state:', ws.readyState);
+                    console.log('Connection URL:', wsUrl);
+                };
+            } catch (error) {
+                console.error('Error creating WebSocket:', error);
+            }
+        }
+
+        async function testConnection() {
+            try {
+                const response = await fetch('/ws');
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers));
+                const text = await response.text();
+                console.log('Response body:', text);
+            } catch (error) {
+                console.error('Test fetch failed:', error);
+            }
         }
 
         function updateConnectionStatus(connected) {
