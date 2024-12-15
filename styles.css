@@ -1,3 +1,7 @@
+:root {
+    --bannerAnimTime: 10s;
+}
+
 body {
     margin: 0;
     background: #eee;
@@ -163,5 +167,5 @@ body {
 }
 
 .sliding {
-    animation: slideAcross 10s linear;
+    animation: slideAcross var(--bannerAnimTime) linear;
 }

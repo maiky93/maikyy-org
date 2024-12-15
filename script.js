@@ -262,7 +262,17 @@ function scheduleBanner() {
     console.log(`Next banner scheduled in ${Math.round(nextTime/1000/60)} minutes`);
 }
 
+function loadSettings() {
+    fetch('https://raw.githubusercontent.com/maiky93/maikyy-org/main/data/settings.json')
+        .then(response => response.json())
+        .then(settings => {
+            document.documentElement.style.setProperty('--bannerAnimTime', settings.banner_settings.animation_time);
+            bannerMessages = settings.banner_settings.messages;
+        })
+}
+
 // Initial calls
+loadSettings();
 updateDateTime();
 getWeather();
 updateSchedule();
