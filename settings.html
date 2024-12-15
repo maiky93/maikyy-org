@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Control Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .control-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .settings-form {
+            display: grid;
+            gap: 10px;
+        }
+        .settings-form label {
+            display: block;
+        }
+        .settings-form input, .settings-form select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+        }
+        .connection-status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Display Control Panel</h1>
+    
+    <div id="connectionStatus" class="connection-status disconnected">
+        Disconnected
+    </div>
+
+    <div class="control-section">
+        <h2>Banner Controls</h2>
+        <div class="settings-form">
+            <div>
+                <label for="bannerText">Custom Banner Message:</label>
+                <input type="text" id="bannerText" placeholder="Enter custom message">
+            </div>
+            <button onclick="sendCustomBanner()" id="sendBannerBtn" disabled>Show Custom Banner</button>
+        </div>
+        <div class="button-grid">
+            <button onclick="triggerDefaultBanner()" id="defaultBannerBtn" disabled>Show Default Banner</button>
+            <button onclick="clearBanner()" id="clearBannerBtn" disabled>Clear Banner</button>
+        </div>
+    </div>
+
+    <div class="control-section">
+        <h2>Display Settings</h2>
+        <div class="settings-form">
+            <div>
+                <label for="bannerSpeed">Banner Animation Speed (seconds):</label>
+                <input type="number" id="bannerSpeed" min="1" max="30" value="10">
+            </div>
+            <div>
+                <label for="background">Background:</label>
+                <select id="background">
+                    <option value="winter">Winter</option>
+                    <option value="summer">Summer</option>
+                    <option value="plain">Plain</option>
+                </select>
+            </div>
+            <button onclick="updateSettings()" id="updateSettingsBtn" disabled>Update Settings</button>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                console.log('Connected to WebSocket server');
+                updateConnectionStatus(true);
+                enableButtons(true);
+                reconnectAttempts = 0;
+            };
+            
+            ws.onclose = () => {
+                console.log('Disconnected from WebSocket server');
+                updateConnectionStatus(false);
+                enableButtons(false);
+                
+                // Attempt to reconnect if we haven't exceeded max attempts
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    setTimeout(connectWebSocket, 5000);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.className = `connection-status ${connected ? 'connected' : 'disconnected'}`;
+            statusDiv.textContent = connected ? 'Connected' : 'Disconnected';
+        }
+
+        function enableButtons(enabled) {
+            document.getElementById('sendBannerBtn').disabled = !enabled;
+            document.getElementById('defaultBannerBtn').disabled = !enabled;
+            document.getElementById('clearBannerBtn').disabled = !enabled;
+            document.getElementById('updateSettingsBtn').disabled = !enabled;
+        }
+
+        function sendCustomBanner() {
+            const bannerText = document.getElementById('bannerText').value;
+            if (bannerText && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'customBanner',
+                    message: bannerText
+                }));
+            }
+        }
+
+        function triggerDefaultBanner() {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'showDefaultBanner'
+                }));
+            }
+        }
+
+        function clearBanner() {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'clearBanner'
+                }));
+            }
+        }
+
+        function updateSettings() {
+            if (ws.readyState === WebSocket.OPEN) {
+                const bannerSpeed = document.getElementById('bannerSpeed').value;
+                const background = document.getElementById('background').value;
+                
+                ws.send(JSON.stringify({
+                    type: 'updateSettings',
+                    settings: {
+                        bannerSpeed: parseInt(bannerSpeed),
+                        background: background
+                    }
+                }));
+            }
+        }
+
+        // Connect when the page loads
+        connectWebSocket();
+    </script>
+</body>
+</html>

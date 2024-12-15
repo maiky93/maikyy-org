@@ -2,6 +2,10 @@ const API_KEY = 'f0436ea441ee727e737ca8ad122414f4';
 const CITY = 'Leiden';
 const COUNTRY = 'NL';
 
+let ws;
+let isConnected = false;
+
+
 const activityDetails = {
     0: { name: "Openen", color: '#8cc5ff' },
     1: { name: "Afsluiten", color: '#8affb7' },
@@ -262,6 +266,75 @@ function scheduleBanner() {
     console.log(`Next banner scheduled in ${Math.round(nextTime/1000/60)} minutes`);
 }
 
+function connectWebSocket() {
+    if (isConnected) return;
+    
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+        console.log('Connected to control panel');
+        isConnected = true;
+    };
+    
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        handleWebSocketMessage(data);
+    };
+    
+    ws.onclose = () => {
+        console.log('Disconnected from control panel');
+        isConnected = false;
+        setTimeout(connectWebSocket, 5000);
+    };
+}
+
+function handleWebSocketMessage(data) {
+    switch (data.type) {
+        case 'customBanner':
+            const banner = document.getElementById('sliding-banner');
+            banner.textContent = data.message;
+            banner.classList.add('sliding');
+            break;
+            
+        case 'showDefaultBanner':
+            showBanner();
+            break;
+            
+        case 'clearBanner':
+            const bannerElem = document.getElementById('sliding-banner');
+            bannerElem.classList.remove('sliding');
+            bannerElem.textContent = '';
+            break;
+            
+        case 'updateSettings':
+            if (data.settings.bannerSpeed) {
+                document.documentElement.style.setProperty(
+                    '--bannerAnimTime', 
+                    `${data.settings.bannerSpeed}s`
+                );
+            }
+            
+            if (data.settings.background) {
+                const backgroundGif = document.getElementById('background-gif');
+                switch (data.settings.background) {
+                    case 'winter':
+                        backgroundGif.src = 'media/gifs/winter-2540.gif';
+                        break;
+                    case 'summer':
+                        backgroundGif.src = 'media/gifs/summer.gif';
+                        break;
+                    case 'plain':
+                        backgroundGif.src = '';
+                        break;
+                }
+            }
+            break;
+    }
+}
+
 function loadSettings() {
     fetch('https://raw.githubusercontent.com/maiky93/maikyy-org/main/data/settings.json')
         .then(response => response.json())
@@ -272,6 +345,7 @@ function loadSettings() {
 }
 
 // Initial calls
+connectWebSocket();
 loadSettings();
 updateDateTime();
 getWeather();

@@ -1,0 +1,12 @@
+name = "display-controller"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[durable_objects]
+bindings = [
+  { name = "DISPLAY_CONTROLLER", class_name = "DisplayController" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["DisplayController"]
