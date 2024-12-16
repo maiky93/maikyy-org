@@ -61,6 +61,26 @@ function initializeEventListeners() {
     document.getElementById('importBtn')?.addEventListener('click', importData);
 }
 
+function calculateDropdownPosition(x, y, dropdownElement) {
+    const windowHeight = window.innerHeight;
+    const dropdownHeight = dropdownElement.offsetHeight;
+    
+    // Check if dropdown would extend below viewport
+    if (y + dropdownHeight > windowHeight) {
+        // Position above the click if it would otherwise extend below viewport
+        y = Math.max(0, windowHeight - dropdownHeight);
+    }
+    
+    // Similar check for right edge
+    const windowWidth = window.innerWidth;
+    const dropdownWidth = dropdownElement.offsetWidth;
+    if (x + dropdownWidth > windowWidth) {
+        x = Math.max(0, windowWidth - dropdownWidth);
+    }
+    
+    return { x, y };
+}
+
 // Category management functions
 function addCategory(parentPath, newCategory) {
     let current = categories;
@@ -430,6 +450,7 @@ function showActivityDropdown(x, y) {
     const dropdown = document.createElement('div');
     dropdown.className = 'activity-dropdown';
     
+    // Add "Clear Selection" option
     const clearOption = document.createElement('div');
     clearOption.textContent = 'Clear Selection';
     clearOption.onclick = clearSelectedSlots;
@@ -440,40 +461,102 @@ function showActivityDropdown(x, y) {
     // Group activities by category
     const groupedActivities = {};
     Object.entries(activities).forEach(([id, activity]) => {
-        const category = activity.categoryPath || 'Uncategorized';
-        if (!groupedActivities[category]) {
-            groupedActivities[category] = [];
-        }
-        groupedActivities[category].push({ id, ...activity });
-    });
-    
-    Object.entries(groupedActivities).forEach(([category, categoryActivities]) => {
-        const header = document.createElement('div');
-        header.className = 'category-header';
-        header.textContent = category;
-        dropdown.appendChild(header);
+        const categoryPath = activity.categoryPath || 'Uncategorized';
+        const pathParts = categoryPath.split('/');
         
-        categoryActivities.forEach(activity => {
-            const option = document.createElement('div');
-            option.className = 'activity-option';
-            option.textContent = activity.name;
-            option.style.borderLeft = `5px solid ${activity.color}`;
-            option.onclick = () => assignActivityToSelectedSlots(activity.id);
-            dropdown.appendChild(option);
+        let current = groupedActivities;
+        pathParts.forEach((part, index) => {
+            if (!current[part]) {
+                current[part] = {
+                    items: [],
+                    subcategories: {}
+                };
+            }
+            if (index === pathParts.length - 1) {
+                current[part].items.push({ id, ...activity });
+            }
+            current = current[part].subcategories;
         });
-        
-        dropdown.appendChild(createSeparator());
     });
     
+    // Create category menu items
+    Object.entries(groupedActivities).forEach(([category, data]) => {
+        const categoryItem = createCategoryMenuItem(category, data);
+        dropdown.appendChild(categoryItem);
+    });
+    
+    // Initial positioning
     dropdown.style.position = 'fixed';
-    dropdown.style.left = `${x}px`;
-    dropdown.style.top = `${y}px`;
+    document.body.appendChild(dropdown);
+    
+    // Calculate and set final position
+    const { x: adjustedX, y: adjustedY } = calculateDropdownPosition(x, y, dropdown);
+    dropdown.style.left = `${adjustedX}px`;
+    dropdown.style.top = `${adjustedY}px`;
     
     removeDropdown();
-    document.body.appendChild(dropdown);
     activeDropdown = dropdown;
     
     document.addEventListener('click', handleClickOutside);
+}
+
+function createCategoryMenuItem(category, data) {
+    const item = document.createElement('div');
+    item.className = 'category-menu-item';
+    
+    const titleContainer = document.createElement('div');
+    titleContainer.className = 'category-menu-title';
+    titleContainer.textContent = category;
+    
+    if (Object.keys(data.subcategories).length > 0 || data.items.length > 0) {
+        titleContainer.innerHTML += '<span class="arrow">▸</span>';
+    }
+    
+    item.appendChild(titleContainer);
+    
+    // Create submenu
+    const submenu = document.createElement('div');
+    submenu.className = 'submenu';
+    
+    // Add activities for this category
+    data.items.forEach(activity => {
+        const activityItem = document.createElement('div');
+        activityItem.className = 'activity-option';
+        activityItem.textContent = activity.name;
+        activityItem.style.borderLeft = `5px solid ${activity.color}`;
+        activityItem.onclick = (e) => {
+            e.stopPropagation();
+            assignActivityToSelectedSlots(activity.id);
+        };
+        submenu.appendChild(activityItem);
+    });
+    
+    // Add subcategories
+    Object.entries(data.subcategories).forEach(([subCategory, subData]) => {
+        submenu.appendChild(createCategoryMenuItem(subCategory, subData));
+    });
+    
+    if (submenu.children.length > 0) {
+        item.appendChild(submenu);
+    }
+    
+    // Handle hover events
+    item.addEventListener('mouseenter', () => {
+        closeAllSubmenus(item.parentElement);
+        if (submenu.children.length > 0) {
+            item.classList.add('open');
+        }
+    });
+    
+    return item;
+}
+
+function closeAllSubmenus(parent) {
+    parent.querySelectorAll('.category-menu-item.open').forEach(item => {
+        if (!parent.contains(item)) {
+            item.classList.remove('open');
+        }
+    });
 }
 
 function createSeparator() {

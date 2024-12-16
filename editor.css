@@ -240,3 +240,70 @@ textarea {
     border-radius: 3px;
     font-size: 0.8em;
 }
+
+.activity-dropdown {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 1000;
+    min-width: 200px;
+    padding: 4px 0;
+}
+
+.category-menu-item {
+    position: relative;
+}
+
+.category-menu-title {
+    padding: 8px 24px 8px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.category-menu-title:hover {
+    background-color: #f0f0f0;
+}
+
+.category-menu-title .arrow {
+    margin-left: 8px;
+}
+
+.submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    min-width: 200px;
+    padding: 4px 0;
+}
+
+.category-menu-item.open > .submenu {
+    display: block;
+}
+
+.activity-option {
+    padding: 8px 24px 8px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.activity-option:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown-separator {
+    height: 1px;
+    background-color: #ddd;
+    margin: 4px 0;
+}
+
+/* Ensure submenus don't go off-screen */
+.category-menu-item:last-child .submenu {
+    bottom: 0;
+}

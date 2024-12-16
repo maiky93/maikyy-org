@@ -11,9 +11,175 @@
         "logo": ""
       }
     },
-    "activities": {},
+    "activities": {
+      "cleaning": {
+        "name": "Dweilen",
+        "color": "#ff7b00",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Standard"
+      },
+      "open": {
+        "name": "Openen",
+        "color": "#8affdc",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Standard"
+      },
+      "close": {
+        "name": "Afsluiten",
+        "color": "#8affdc",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Standard"
+      },
+      "available": {
+        "name": "Beschikbaar",
+        "color": "#ffdd00",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Standard"
+      },
+      "rusty_blades": {
+        "name": "Rusty Blades",
+        "color": "#ff0000",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Hockey"
+      },
+      "islanders": {
+        "name": "Leiden Islanders",
+        "color": "#ff0000",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Hockey"
+      },
+      "gladiators": {
+        "name": "Leiden Gladiators",
+        "color": "#ff0000",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Hockey"
+      },
+      "leiden_lions": {
+        "name": "Leiden Lions",
+        "color": "#ff0000",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Hockey"
+      },
+      "blues_comp": {
+        "name": "Leiden Blues (Competition)",
+        "color": "#ff0000",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Hockey"
+      },
+      "blues_rec": {
+        "name": "Leiden Blues (Recreation)",
+        "color": "#ff0000",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Hockey"
+      },
+      "ducks": {
+        "name": "Leiden Ducks",
+        "color": "#ff0000",
+        "description": "",
+        "website": "",
+        "socialMedia": [],
+        "logo": "",
+        "categoryPath": "Hockey"
+      }
+    },
     "weeklySchedule": {
-      "hockey_rink": {},
+      "hockey_rink": {
+        "saturday": [
+          {
+            "activityId": "ducks",
+            "startTime": "21:30",
+            "endTime": "21:45"
+          },
+          {
+            "activityId": "ducks",
+            "startTime": "21:45",
+            "endTime": "22:00"
+          },
+          {
+            "activityId": "ducks",
+            "startTime": "22:00",
+            "endTime": "22:15"
+          },
+          {
+            "activityId": "cleaning",
+            "startTime": "21:15",
+            "endTime": "21:30"
+          },
+          {
+            "activityId": "blues_rec",
+            "startTime": "21:00",
+            "endTime": "21:15"
+          },
+          {
+            "activityId": "blues_rec",
+            "startTime": "20:45",
+            "endTime": "21:00"
+          },
+          {
+            "activityId": "blues_rec",
+            "startTime": "20:30",
+            "endTime": "20:45"
+          },
+          {
+            "activityId": "blues_rec",
+            "startTime": "20:15",
+            "endTime": "20:30"
+          },
+          {
+            "activityId": "blues_rec",
+            "startTime": "20:00",
+            "endTime": "20:15"
+          },
+          {
+            "activityId": "blues_rec",
+            "startTime": "19:45",
+            "endTime": "20:00"
+          },
+          {
+            "activityId": "cleaning",
+            "startTime": "19:30",
+            "endTime": "19:45"
+          }
+        ]
+      },
       "speed_rink": {}
+    },
+    "categories": {
+      "Standard": {
+        "subcategories": {}
+      },
+      "Hockey": {
+        "subcategories": {}
+      }
     }
   }
