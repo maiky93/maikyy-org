@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ice Rink Schedule Manager</title>
+    <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+    <h1>Ice Rink Schedule Manager</h1>
+
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'Rinks')" id="defaultOpen">Rinks</button>
+        <button class="tablinks" onclick="openTab(event, 'Activities')">Activities</button>
+        <button class="tablinks" onclick="openTab(event, 'Schedule')">Schedule</button>
+        <button class="tablinks" onclick="openTab(event, 'Export')">Export/Import</button>
+    </div>
+
+    <!-- Rinks Tab -->
+    <div id="Rinks" class="tabcontent">
+        <h2>Manage Rinks</h2>
+        <div class="form-group">
+            <label for="rinkId">Rink ID:</label>
+            <input type="text" id="rinkId" placeholder="e.g., main-rink">
+            
+            <label for="rinkName">Name:</label>
+            <input type="text" id="rinkName" placeholder="e.g., Main Rink">
+            
+            <label for="rinkDescription">Description:</label>
+            <input type="text" id="rinkDescription">
+            
+            <label for="rinkLogo">Logo URL:</label>
+            <input type="text" id="rinkLogo">
+            
+            <button onclick="addRink()">Add Rink</button>
+        </div>
+        <div id="rinksList"></div>
+    </div>
+
+    <!-- Activities Tab -->
+    <div id="Activities" class="tabcontent">
+        <h2>Manage Activities</h2>
+        <div class="form-group">
+            <label for="activityId">Activity ID:</label>
+            <input type="text" id="activityId" placeholder="e.g., leiden-lions">
+            
+            <label for="activityName">Name:</label>
+            <input type="text" id="activityName" placeholder="e.g., Leiden Lions Hockey">
+            
+            <label for="activityColor">Color:</label>
+            <input type="color" id="activityColor" value="#ff0000">
+            
+            <label for="activityDescription">Description:</label>
+            <input type="text" id="activityDescription">
+            
+            <label for="activityLogo">Logo URL:</label>
+            <input type="text" id="activityLogo">
+            
+            <button onclick="addActivity()">Add Activity</button>
+        </div>
+        <div id="activitiesList"></div>
+    </div>
+
+    <!-- Schedule Tab -->
+    <div id="Schedule" class="tabcontent">
+        <h2>Weekly Schedule</h2>
+        <div class="form-group">
+            <select id="rinkSelect" onchange="initializeScheduleGrid()"></select>
+        </div>
+        <div id="scheduleGrid" class="schedule-grid"></div>
+    </div>
+
+    <!-- Export/Import Tab -->
+    <div id="Export" class="tabcontent">
+        <h2>Export/Import Data</h2>
+        <textarea id="jsonData"></textarea>
+        <button onclick="exportData()">Export</button>
+        <button onclick="importData()">Import</button>
+    </div>
+
+    <script src="editor.js"></script>
+</body>
+</html>
