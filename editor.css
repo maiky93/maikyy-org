@@ -45,7 +45,8 @@ body {
     margin-bottom: 5px;
 }
 
-.form-group input, .form-group select {
+.form-group input, 
+.form-group select {
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
@@ -56,6 +57,17 @@ body {
     padding: 8px;
     margin-bottom: 10px;
     resize: vertical;
+}
+
+.category-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.category-select {
+    flex: 1;
+    padding: 8px;
 }
 
 .social-media-list {
@@ -143,40 +155,6 @@ body {
     gap: 2px;
     margin-top: 20px;
     font-size: 0.9em;
-    position: relative; /* Add this */
-}
-
-.schedule-header-row {
-    display: grid;
-    grid-template-columns: auto repeat(7, 1fr);
-    gap: 2px;
-    position: sticky;
-    top: 0;
-    background-color: white;
-    z-index: 10;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.schedule-body {
-    display: grid;
-    grid-template-columns: auto repeat(7, 1fr);
-    gap: 2px;
-}
-
-.schedule-header {
-    background-color: #f1f1f1;
-    font-weight: bold;
-    user-select: none;
-    padding: 5px;
-    text-align: center;
-}
-
-.time-label {
-    background-color: white;
-    padding: 5px;
-    position: sticky;
-    left: 0;
-    z-index: 5;
 }
 
 .schedule-grid > div {
@@ -211,9 +189,9 @@ body {
     border: 1px solid #ccc;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     z-index: 100;
-    max-height: 200px;
+    max-height: 300px;
     overflow-y: auto;
-    width: 150px;
+    min-width: 150px;
 }
 
 .activity-dropdown div {
@@ -223,6 +201,28 @@ body {
 
 .activity-dropdown div:hover {
     background-color: #f0f0f0;
+}
+
+.category-header {
+    padding: 8px;
+    background-color: #f5f5f5;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+}
+
+.activity-option {
+    padding: 8px 8px 8px 13px;
+    cursor: pointer;
+}
+
+.activity-option:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown-separator {
+    height: 1px;
+    background-color: #ddd;
+    margin: 4px 0;
 }
 
 .export-section {

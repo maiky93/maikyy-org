@@ -2,33 +2,21 @@
 let rinks = {};
 let activities = {};
 let weeklySchedule = {};
-
-const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+let categories = {};
 let selectedCells = new Set();
 let activeDropdown = null;
+
+const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 // Load initial data
 async function loadInitialData() {
     try {
         // Start with default data
         const defaultData = {
-            rinks: {
-                "hockey_rink": {
-                    "name": "Binnenbaan",
-                    "description": "30x60 ijsvloer",
-                    "logo": ""
-                },
-                "speed_rink": {
-                    "name": "Rondbaan",
-                    "description": "250 meter ijsvloer",
-                    "logo": ""
-                }
-            },
+            rinks: {},
             activities: {},
-            weeklySchedule: {
-                "hockey_rink": {},
-                "speed_rink": {}
-            }
+            weeklySchedule: {},
+            categories: {}
         };
 
         try {
@@ -38,17 +26,14 @@ async function loadInitialData() {
                 rinks = data.rinks || defaultData.rinks;
                 activities = data.activities || defaultData.activities;
                 weeklySchedule = data.weeklySchedule || defaultData.weeklySchedule;
+                categories = data.categories || defaultData.categories;
             } else {
                 console.log('Using default data as fetch failed');
-                rinks = defaultData.rinks;
-                activities = defaultData.activities;
-                weeklySchedule = defaultData.weeklySchedule;
+                ({rinks, activities, weeklySchedule, categories} = defaultData);
             }
         } catch (error) {
             console.log('Using default data due to error:', error);
-            rinks = defaultData.rinks;
-            activities = defaultData.activities;
-            weeklySchedule = defaultData.weeklySchedule;
+            ({rinks, activities, weeklySchedule, categories} = defaultData);
         }
 
         // Update UI
@@ -56,6 +41,7 @@ async function loadInitialData() {
         displayActivities();
         updateRinkSelect();
         initializeScheduleGrid();
+        buildCategoryDropdowns();
         
         // Initialize event listeners after data is loaded
         initializeEventListeners();
@@ -66,7 +52,6 @@ async function loadInitialData() {
 }
 
 function initializeEventListeners() {
-    // Add event listeners
     document.getElementById('addRinkBtn')?.addEventListener('click', addRink);
     document.getElementById('addSocialMediaBtn')?.addEventListener('click', addSocialMedia);
     document.getElementById('saveActivityBtn')?.addEventListener('click', saveActivity);
@@ -74,6 +59,159 @@ function initializeEventListeners() {
     document.getElementById('rinkSelect')?.addEventListener('change', initializeScheduleGrid);
     document.getElementById('exportBtn')?.addEventListener('click', exportData);
     document.getElementById('importBtn')?.addEventListener('click', importData);
+}
+
+// Category management functions
+function addCategory(parentPath, newCategory) {
+    let current = categories;
+    
+    if (parentPath) {
+        // Handle nested categories
+        const parts = parentPath.split('/');
+        for (const part of parts) {
+            if (!current[part]) {
+                current[part] = { subcategories: {} };
+            }
+            current = current[part].subcategories;
+        }
+    }
+    
+    if (!current[newCategory]) {
+        current[newCategory] = { subcategories: {} };
+        return true;
+    }
+    return false;
+}
+
+function buildCategoryDropdowns() {
+    const container = document.getElementById('categoryContainer');
+    container.innerHTML = '';
+    
+    // Create main category dropdown
+    const mainSelect = createCategorySelect('mainCategory', Object.keys(categories));
+    container.appendChild(mainSelect);
+    
+    // Create subcategory dropdown (initially empty)
+    const subSelect = createCategorySelect('subCategory', []);
+    subSelect.style.display = 'none';
+    container.appendChild(subSelect);
+    
+    return container;
+}
+
+function createCategorySelect(id, options) {
+    const select = document.createElement('select');
+    select.id = id;
+    select.className = 'category-select';
+    
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = '-- Select --';
+    select.appendChild(defaultOption);
+    
+    options.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        select.appendChild(option);
+    });
+    
+    const newOption = document.createElement('option');
+    newOption.value = 'new';
+    newOption.textContent = 'New...';
+    select.appendChild(newOption);
+    
+    // Add change event listener based on select ID
+    if (id === 'mainCategory') {
+        select.addEventListener('change', (e) => {
+            const value = e.target.value;
+            if (value === 'new') {
+                promptNewCategory('');
+            } else {
+                updateSubcategoryDropdown(value);
+            }
+        });
+    } else if (id === 'subCategory') {
+        select.addEventListener('change', (e) => {
+            const mainCategory = document.getElementById('mainCategory').value;
+            const value = e.target.value;
+            
+            if (value === 'new') {
+                promptNewCategory(mainCategory);
+            } else if (value) {
+                document.getElementById('activityCategory').value = `${mainCategory}/${value}`;
+            }
+        });
+    }
+    
+    return select;
+}
+
+function updateSubcategoryDropdown(mainCategory) {
+    const subSelect = document.getElementById('subCategory');
+    if (!mainCategory || mainCategory === 'new') {
+        subSelect.style.display = 'none';
+        return;
+    }
+    
+    const subcategories = Object.keys(categories[mainCategory]?.subcategories || {});
+    
+    subSelect.innerHTML = '';
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = '-- Select --';
+    subSelect.appendChild(defaultOption);
+    
+    subcategories.forEach(sub => {
+        const option = document.createElement('option');
+        option.value = sub;
+        option.textContent = sub;
+        subSelect.appendChild(option);
+    });
+    
+    const newOption = document.createElement('option');
+    newOption.value = 'new';
+    newOption.textContent = 'New...';
+    subSelect.appendChild(newOption);
+    
+    subSelect.style.display = 'inline-block';
+    document.getElementById('activityCategory').value = mainCategory;
+}
+
+function promptNewCategory(parentPath) {
+    const newCategory = prompt('Enter new category name:');
+    if (newCategory && newCategory.trim()) {
+        const categoryName = newCategory.trim();
+        
+        if (addCategory(parentPath, categoryName)) {
+            // Rebuild dropdowns with new category
+            buildCategoryDropdowns();
+            
+            if (parentPath) {
+                // Adding a subcategory
+                document.getElementById('mainCategory').value = parentPath;
+                updateSubcategoryDropdown(parentPath);
+                document.getElementById('subCategory').value = categoryName;
+                document.getElementById('activityCategory').value = `${parentPath}/${categoryName}`;
+            } else {
+                // Adding a main category
+                document.getElementById('mainCategory').value = categoryName;
+                document.getElementById('activityCategory').value = categoryName;
+                updateSubcategoryDropdown(categoryName);
+            }
+        } else {
+            alert('Category already exists');
+        }
+    } else {
+        // Reset dropdowns if cancelled
+        if (parentPath) {
+            document.getElementById('mainCategory').value = parentPath;
+            updateSubcategoryDropdown(parentPath);
+        } else {
+            document.getElementById('mainCategory').value = '';
+            document.getElementById('subCategory').style.display = 'none';
+        }
+    }
 }
 
 // Rink management
@@ -188,7 +326,8 @@ function getFormData() {
         description: document.getElementById('activityDescription').value,
         website: document.getElementById('activityWebsite').value,
         socialMedia: socialMedia,
-        logo: document.getElementById('activityLogo').value
+        logo: document.getElementById('activityLogo').value,
+        categoryPath: document.getElementById('activityCategory').value
     };
 }
 
@@ -254,17 +393,16 @@ function saveActivity() {
     const editId = document.getElementById('activityEditId').value;
     
     if (editId) {
-        // Update existing activity
         activities[editId] = {
             name: formData.name,
             color: formData.color,
             description: formData.description,
             website: formData.website,
             socialMedia: formData.socialMedia,
-            logo: formData.logo
+            logo: formData.logo,
+            categoryPath: formData.categoryPath
         };
     } else {
-        // Add new activity
         if (!formData.id) {
             alert('Activity ID is required');
             return;
@@ -279,12 +417,69 @@ function saveActivity() {
             description: formData.description,
             website: formData.website,
             socialMedia: formData.socialMedia,
-            logo: formData.logo
+            logo: formData.logo,
+            categoryPath: formData.categoryPath
         };
     }
     
     displayActivities();
     clearActivityForm();
+}
+
+function showActivityDropdown(x, y) {
+    const dropdown = document.createElement('div');
+    dropdown.className = 'activity-dropdown';
+    
+    const clearOption = document.createElement('div');
+    clearOption.textContent = 'Clear Selection';
+    clearOption.onclick = clearSelectedSlots;
+    dropdown.appendChild(clearOption);
+    
+    dropdown.appendChild(createSeparator());
+    
+    // Group activities by category
+    const groupedActivities = {};
+    Object.entries(activities).forEach(([id, activity]) => {
+        const category = activity.categoryPath || 'Uncategorized';
+        if (!groupedActivities[category]) {
+            groupedActivities[category] = [];
+        }
+        groupedActivities[category].push({ id, ...activity });
+    });
+    
+    Object.entries(groupedActivities).forEach(([category, categoryActivities]) => {
+        const header = document.createElement('div');
+        header.className = 'category-header';
+        header.textContent = category;
+        dropdown.appendChild(header);
+        
+        categoryActivities.forEach(activity => {
+            const option = document.createElement('div');
+            option.className = 'activity-option';
+            option.textContent = activity.name;
+            option.style.borderLeft = `5px solid ${activity.color}`;
+            option.onclick = () => assignActivityToSelectedSlots(activity.id);
+            dropdown.appendChild(option);
+        });
+        
+        dropdown.appendChild(createSeparator());
+    });
+    
+    dropdown.style.position = 'fixed';
+    dropdown.style.left = `${x}px`;
+    dropdown.style.top = `${y}px`;
+    
+    removeDropdown();
+    document.body.appendChild(dropdown);
+    activeDropdown = dropdown;
+    
+    document.addEventListener('click', handleClickOutside);
+}
+
+function createSeparator() {
+    const separator = document.createElement('div');
+    separator.className = 'dropdown-separator';
+    return separator;
 }
 
 function displayActivities() {
@@ -328,47 +523,28 @@ function initializeScheduleGrid() {
     grid.innerHTML = '';
     selectedCells.clear();
 
-    // Create header row
-    const headerRow = document.createElement('div');
-    headerRow.className = 'schedule-header-row';
-    
-    // Add time/day header
-    headerRow.appendChild(createDiv('Time/Day', 'schedule-header'));
-    
-    // Add day headers
+    // Add headers
+    grid.appendChild(createDiv('Time/Day', 'schedule-header'));
     days.forEach(day => {
-        headerRow.appendChild(createDiv(day.charAt(0).toUpperCase() + day.slice(1), 'schedule-header'));
+        grid.appendChild(createDiv(day.charAt(0).toUpperCase() + day.slice(1), 'schedule-header'));
     });
-    
-    // Add header row to grid
-    grid.appendChild(headerRow);
-
-    // Create body container
-    const bodyContainer = document.createElement('div');
-    bodyContainer.className = 'schedule-body';
 
     // Add time slots (every 15 minutes from 6:00 to 23:45)
     for (let hour = 6; hour < 24; hour++) {
         for (let minute = 0; minute < 60; minute += 15) {
             const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            grid.appendChild(createDiv(timeString));
             
-            // Add time label
-            bodyContainer.appendChild(createDiv(timeString, 'time-label'));
-            
-            // Add day cells
             days.forEach(day => {
                 const cell = createDiv('', 'time-slot');
                 cell.dataset.time = timeString;
                 cell.dataset.day = day;
                 cell.onclick = (e) => handleCellClick(e, cell);
                 updateScheduleCell(cell, day, timeString);
-                bodyContainer.appendChild(cell);
+                grid.appendChild(cell);
             });
         }
     }
-
-    // Add body container to grid
-    grid.appendChild(bodyContainer);
 }
 
 function createDiv(content, className = '') {
@@ -527,15 +703,13 @@ function exportData() {
     const data = {
         rinks,
         activities,
-        weeklySchedule
+        weeklySchedule,
+        categories
     };
     
     const jsonString = JSON.stringify(data, null, 2);
-    
-    // Update the textarea
     document.getElementById('jsonData').value = jsonString;
     
-    // Create and trigger download
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -553,10 +727,12 @@ function importData() {
         rinks = data.rinks || {};
         activities = data.activities || {};
         weeklySchedule = data.weeklySchedule || {};
+        categories = data.categories || {};
         displayRinks();
         displayActivities();
         updateRinkSelect();
         initializeScheduleGrid();
+        buildCategoryDropdowns();
     } catch (error) {
         alert('Invalid JSON format');
     }
@@ -585,12 +761,7 @@ function openTab(evt, tabName) {
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM Content Loaded');
-    
-    // Open default tab first
     document.getElementById("defaultOpen")?.click();
-    
-    // Then load the data
     await loadInitialData();
-    
     console.log('Initialization complete');
 });

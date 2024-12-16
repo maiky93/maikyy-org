@@ -49,6 +49,10 @@
             <label for="activityName">Name:</label>
             <input type="text" id="activityName" placeholder="e.g., Leiden Lions Hockey">
             
+            <label for="categoryContainer">Category:</label>
+            <div id="categoryContainer" class="category-container"></div>
+            <input type="hidden" id="activityCategory">
+            
             <label for="activityColor">Color:</label>
             <input type="color" id="activityColor" value="#ff0000">
             
@@ -89,11 +93,9 @@
     <div id="Schedule" class="tabcontent">
         <h2>Weekly Schedule</h2>
         <div class="form-group">
-            <select id="rinkSelect"></select>
+            <select id="rinkSelect" onchange="initializeScheduleGrid()"></select>
         </div>
-        <div style="height: calc(100vh - 200px); overflow-y: auto;">
-            <div id="scheduleGrid" class="schedule-grid"></div>
-        </div>
+        <div id="scheduleGrid" class="schedule-grid"></div>
     </div>
 
     <!-- Export/Import Tab -->
