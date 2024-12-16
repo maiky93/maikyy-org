@@ -67,7 +67,9 @@
         <div class="form-group">
             <select id="rinkSelect" onchange="initializeScheduleGrid()"></select>
         </div>
-        <div id="scheduleGrid" class="schedule-grid"></div>
+        <div style="height: calc(100vh - 200px); overflow-y: auto;">
+            <div id="scheduleGrid" class="schedule-grid"></div>
+        </div>
     </div>
 
     <!-- Export/Import Tab -->

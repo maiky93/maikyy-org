@@ -69,6 +69,40 @@ body {
     gap: 2px;
     margin-top: 20px;
     font-size: 0.9em;
+    position: relative; /* Add this */
+}
+
+.schedule-header-row {
+    display: grid;
+    grid-template-columns: auto repeat(7, 1fr);
+    gap: 2px;
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.schedule-body {
+    display: grid;
+    grid-template-columns: auto repeat(7, 1fr);
+    gap: 2px;
+}
+
+.schedule-header {
+    background-color: #f1f1f1;
+    font-weight: bold;
+    user-select: none;
+    padding: 5px;
+    text-align: center;
+}
+
+.time-label {
+    background-color: white;
+    padding: 5px;
+    position: sticky;
+    left: 0;
+    z-index: 5;
 }
 
 .schedule-grid > div {

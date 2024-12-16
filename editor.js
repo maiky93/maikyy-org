@@ -117,28 +117,47 @@ function initializeScheduleGrid() {
     grid.innerHTML = '';
     selectedCells.clear();
 
-    // Add headers
-    grid.appendChild(createDiv('Time/Day', 'schedule-header'));
+    // Create header row
+    const headerRow = document.createElement('div');
+    headerRow.className = 'schedule-header-row';
+    
+    // Add time/day header
+    headerRow.appendChild(createDiv('Time/Day', 'schedule-header'));
+    
+    // Add day headers
     days.forEach(day => {
-        grid.appendChild(createDiv(day.charAt(0).toUpperCase() + day.slice(1), 'schedule-header'));
+        headerRow.appendChild(createDiv(day.charAt(0).toUpperCase() + day.slice(1), 'schedule-header'));
     });
+    
+    // Add header row to grid
+    grid.appendChild(headerRow);
+
+    // Create body container
+    const bodyContainer = document.createElement('div');
+    bodyContainer.className = 'schedule-body';
 
     // Add time slots (every 15 minutes from 6:00 to 23:45)
     for (let hour = 6; hour < 24; hour++) {
         for (let minute = 0; minute < 60; minute += 15) {
             const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-            grid.appendChild(createDiv(timeString));
             
+            // Add time label
+            bodyContainer.appendChild(createDiv(timeString, 'time-label'));
+            
+            // Add day cells
             days.forEach(day => {
                 const cell = createDiv('', 'time-slot');
                 cell.dataset.time = timeString;
                 cell.dataset.day = day;
                 cell.onclick = (e) => handleCellClick(e, cell);
                 updateScheduleCell(cell, day, timeString);
-                grid.appendChild(cell);
+                bodyContainer.appendChild(cell);
             });
         }
     }
+
+    // Add body container to grid
+    grid.appendChild(bodyContainer);
 }
 
 function createDiv(content, className = '') {
