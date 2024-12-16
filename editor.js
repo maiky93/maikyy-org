@@ -7,6 +7,34 @@ const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
 let selectedCells = new Set();
 let activeDropdown = null;
 
+// Load initial data
+async function loadInitialData() {
+    try {
+        const response = await fetch('/data/schedule.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        // Initialize our data structures
+        rinks = data.rinks || {};
+        activities = data.activities || {};
+        weeklySchedule = data.weeklySchedule || {};
+
+        // Update UI
+        displayRinks();
+        displayActivities();
+        updateRinkSelect();
+        initializeScheduleGrid();
+    } catch (error) {
+        console.error('Error loading schedule data:', error);
+        // Initialize with empty data structures if load fails
+        rinks = {};
+        activities = {};
+        weeklySchedule = {};
+    }
+}
+
 // Rink management
 function addRink() {
     const id = document.getElementById('rinkId').value;
@@ -460,7 +488,22 @@ function exportData() {
         activities,
         weeklySchedule
     };
-    document.getElementById('jsonData').value = JSON.stringify(data, null, 2);
+    
+    const jsonString = JSON.stringify(data, null, 2);
+    
+    // Update the textarea
+    document.getElementById('jsonData').value = jsonString;
+    
+    // Create and trigger download
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'schedule.json';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
 }
 
 function importData() {
@@ -500,3 +543,7 @@ function openTab(evt, tabName) {
 
 // Initialize on load
 document.getElementById("defaultOpen").click();
+document.addEventListener('DOMContentLoaded', () => {
+    loadInitialData();
+    document.getElementById("defaultOpen").click();
+});

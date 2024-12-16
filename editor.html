@@ -99,6 +99,17 @@
     <!-- Export/Import Tab -->
     <div id="Export" class="tabcontent">
         <h2>Export/Import Data</h2>
+        
+        <div class="export-info" style="margin-bottom: 20px;">
+            <h3>How to Save Changes</h3>
+            <ol>
+                <li>Click the Export button below to get the current schedule data</li>
+                <li>The data will appear in the textarea and also download as schedule.json</li>
+                <li>Replace the contents of data/schedule.json in the GitHub repository with this new data</li>
+                <li>Commit and push the changes - the site will automatically update</li>
+            </ol>
+        </div>
+    
         <textarea id="jsonData"></textarea>
         <button onclick="exportData()">Export</button>
         <button onclick="importData()">Import</button>
