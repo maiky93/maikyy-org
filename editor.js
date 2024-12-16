@@ -10,22 +10,31 @@ let activeDropdown = null;
 // Load initial data
 async function loadInitialData() {
     try {
+        console.log('Attempting to load data from /data/schedule.json');
         const response = await fetch('/data/schedule.json');
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
         const data = await response.json();
+        console.log('Loaded data:', data);
         
         // Initialize our data structures
         rinks = data.rinks || {};
         activities = data.activities || {};
         weeklySchedule = data.weeklySchedule || {};
+        
+        console.log('Initialized data structures:', { rinks, activities, weeklySchedule });
 
         // Update UI
+        console.log('Updating UI components...');
         displayRinks();
         displayActivities();
         updateRinkSelect();
         initializeScheduleGrid();
+        console.log('UI update complete');
     } catch (error) {
         console.error('Error loading schedule data:', error);
         // Initialize with empty data structures if load fails
@@ -542,25 +551,24 @@ function openTab(evt, tabName) {
 }
 
 // Initialize all event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Load initial data
-    loadInitialData();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM Content Loaded');
     
-    // Initialize tab
+    // Wait for the data to load first
+    await loadInitialData();
+    console.log('Data loading complete');
+    
+    // Then initialize the UI
     document.getElementById("defaultOpen").click();
-
-    // Add event listeners for rinks
+    
+    // Add event listeners
     document.getElementById('addRinkBtn').addEventListener('click', addRink);
-
-    // Add event listeners for activities
     document.getElementById('addSocialMediaBtn').addEventListener('click', addSocialMedia);
     document.getElementById('saveActivityBtn').addEventListener('click', saveActivity);
     document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
-
-    // Add event listeners for schedule
     document.getElementById('rinkSelect').addEventListener('change', initializeScheduleGrid);
-
-    // Add event listeners for export/import
     document.getElementById('exportBtn').addEventListener('click', exportData);
     document.getElementById('importBtn').addEventListener('click', importData);
+    
+    console.log('Initialization complete');
 });
