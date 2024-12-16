@@ -61,21 +61,21 @@ function initializeEventListeners() {
     document.getElementById('importBtn')?.addEventListener('click', importData);
 }
 
-function calculateDropdownPosition(x, y, dropdownElement) {
+function calculateDropdownPosition(x, y, dropdown) {
     const windowHeight = window.innerHeight;
-    const dropdownHeight = dropdownElement.offsetHeight;
+    const windowWidth = window.innerWidth;
+    const dropdownRect = dropdown.getBoundingClientRect();
+    const dropdownHeight = dropdownRect.height;
+    const dropdownWidth = dropdownRect.width;
     
-    // Check if dropdown would extend below viewport
+    // If dropdown would extend below viewport, position it above the click point
     if (y + dropdownHeight > windowHeight) {
-        // Position above the click if it would otherwise extend below viewport
-        y = Math.max(0, windowHeight - dropdownHeight);
+        y = Math.max(10, y - dropdownHeight);
     }
     
-    // Similar check for right edge
-    const windowWidth = window.innerWidth;
-    const dropdownWidth = dropdownElement.offsetWidth;
+    // If dropdown would extend beyond right edge, move it left
     if (x + dropdownWidth > windowWidth) {
-        x = Math.max(0, windowWidth - dropdownWidth);
+        x = Math.max(10, windowWidth - dropdownWidth - 10);
     }
     
     return { x, y };
@@ -452,53 +452,148 @@ function showActivityDropdown(x, y) {
     
     // Add "Clear Selection" option
     const clearOption = document.createElement('div');
+    clearOption.className = 'dropdown-item';
     clearOption.textContent = 'Clear Selection';
     clearOption.onclick = clearSelectedSlots;
     dropdown.appendChild(clearOption);
     
     dropdown.appendChild(createSeparator());
     
-    // Group activities by category
-    const groupedActivities = {};
+    // First, group activities by their top-level category
+    const categoryGroups = {};
     Object.entries(activities).forEach(([id, activity]) => {
         const categoryPath = activity.categoryPath || 'Uncategorized';
-        const pathParts = categoryPath.split('/');
+        const topCategory = categoryPath.split('/')[0];
         
-        let current = groupedActivities;
-        pathParts.forEach((part, index) => {
-            if (!current[part]) {
-                current[part] = {
-                    items: [],
-                    subcategories: {}
-                };
-            }
-            if (index === pathParts.length - 1) {
-                current[part].items.push({ id, ...activity });
-            }
-            current = current[part].subcategories;
-        });
+        if (!categoryGroups[topCategory]) {
+            categoryGroups[topCategory] = [];
+        }
+        categoryGroups[topCategory].push({ id, ...activity });
     });
     
-    // Create category menu items
-    Object.entries(groupedActivities).forEach(([category, data]) => {
-        const categoryItem = createCategoryMenuItem(category, data);
+    // Create menu items for each category
+    Object.entries(categoryGroups).forEach(([category, activities]) => {
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'category-menu-item';
+        
+        const categoryTitle = document.createElement('div');
+        categoryTitle.className = 'category-menu-title';
+        categoryTitle.innerHTML = `${category} <span class="arrow">▸</span>`;
+        categoryItem.appendChild(categoryTitle);
+        
+        // Create submenu for activities
+        const submenu = document.createElement('div');
+        submenu.className = 'submenu';
+        
+        // Add activities to submenu
+        activities.forEach(activity => {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-option';
+            activityItem.textContent = activity.name;
+            activityItem.style.borderLeft = `5px solid ${activity.color}`;
+            activityItem.onclick = (e) => {
+                e.stopPropagation();
+                assignActivityToSelectedSlots(activity.id);
+            };
+            submenu.appendChild(activityItem);
+        });
+        
+        categoryItem.appendChild(submenu);
         dropdown.appendChild(categoryItem);
     });
     
-    // Initial positioning
+    // Initial positioning to get dimensions
     dropdown.style.position = 'fixed';
+    dropdown.style.visibility = 'hidden'; // Hide initially to measure
     document.body.appendChild(dropdown);
     
     // Calculate and set final position
     const { x: adjustedX, y: adjustedY } = calculateDropdownPosition(x, y, dropdown);
     dropdown.style.left = `${adjustedX}px`;
     dropdown.style.top = `${adjustedY}px`;
+    dropdown.style.visibility = 'visible'; // Make visible after positioning
     
     removeDropdown();
     activeDropdown = dropdown;
     
     document.addEventListener('click', handleClickOutside);
 }
+
+// Update CSS styles
+const style = document.createElement('style');
+style.textContent = `
+    .activity-dropdown {
+        position: fixed;
+        background: white;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 1000;
+        min-width: 200px;
+        padding: 4px 0;
+    }
+
+    .dropdown-item {
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f0f0f0;
+    }
+
+    .category-menu-item {
+        position: relative;
+    }
+
+    .category-menu-title {
+        padding: 8px 24px 8px 12px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .category-menu-title:hover {
+        background-color: #f0f0f0;
+    }
+
+    .category-menu-title .arrow {
+        margin-left: 8px;
+    }
+
+    .submenu {
+        display: none;
+        position: absolute;
+        left: 100%;
+        top: 0;
+        background: white;
+        border: 1px solid #ccc;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        min-width: 200px;
+        padding: 4px 0;
+    }
+
+    .category-menu-item:hover > .submenu {
+        display: block;
+    }
+
+    .activity-option {
+        padding: 8px 24px 8px 12px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .activity-option:hover {
+        background-color: #f0f0f0;
+    }
+
+    .dropdown-separator {
+        height: 1px;
+        background-color: #ddd;
+        margin: 4px 0;
+    }
+`;
+document.head.appendChild(style);
 
 function createCategoryMenuItem(category, data) {
     const item = document.createElement('div');
