@@ -562,13 +562,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById("defaultOpen").click();
     
     // Add event listeners
-    document.getElementById('addRinkBtn').addEventListener('click', addRink);
-    document.getElementById('addSocialMediaBtn').addEventListener('click', addSocialMedia);
-    document.getElementById('saveActivityBtn').addEventListener('click', saveActivity);
-    document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
-    document.getElementById('rinkSelect').addEventListener('change', initializeScheduleGrid);
-    document.getElementById('exportBtn').addEventListener('click', exportData);
-    document.getElementById('importBtn').addEventListener('click', importData);
+    //document.getElementById('addRinkBtn').addEventListener('click', addRink);
+    //document.getElementById('addSocialMediaBtn').addEventListener('click', addSocialMedia);
+    //document.getElementById('saveActivityBtn').addEventListener('click', saveActivity);
+    //document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
+    //document.getElementById('rinkSelect').addEventListener('change', initializeScheduleGrid);
+    //document.getElementById('exportBtn').addEventListener('click', exportData);
+    //document.getElementById('importBtn').addEventListener('click', importData);
     
     console.log('Initialization complete');
 });
