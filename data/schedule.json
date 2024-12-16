@@ -1,5 +1,19 @@
 {
-    "rinks": {},
+    "rinks": {
+      "hockey_rink": {
+        "name": "Binnenbaan",
+        "description": "30x60 ijsvloer",
+        "logo": ""
+      },
+      "speed_rink": {
+        "name": "Rondbaan",
+        "description": "250 meter ijsvloer",
+        "logo": ""
+      }
+    },
     "activities": {},
-    "weeklySchedule": {}
+    "weeklySchedule": {
+      "hockey_rink": {},
+      "speed_rink": {}
+    }
   }

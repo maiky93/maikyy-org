@@ -541,9 +541,26 @@ function openTab(evt, tabName) {
     }
 }
 
-// Initialize on load
-document.getElementById("defaultOpen").click();
+// Initialize all event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    // Load initial data
     loadInitialData();
+    
+    // Initialize tab
     document.getElementById("defaultOpen").click();
+
+    // Add event listeners for rinks
+    document.getElementById('addRinkBtn').addEventListener('click', addRink);
+
+    // Add event listeners for activities
+    document.getElementById('addSocialMediaBtn').addEventListener('click', addSocialMedia);
+    document.getElementById('saveActivityBtn').addEventListener('click', saveActivity);
+    document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
+
+    // Add event listeners for schedule
+    document.getElementById('rinkSelect').addEventListener('change', initializeScheduleGrid);
+
+    // Add event listeners for export/import
+    document.getElementById('exportBtn').addEventListener('click', exportData);
+    document.getElementById('importBtn').addEventListener('click', importData);
 });

@@ -32,7 +32,7 @@
             <label for="rinkLogo">Logo URL:</label>
             <input type="text" id="rinkLogo">
             
-            <button onclick="addRink()">Add Rink</button>
+            <button id="addRinkBtn">Add Rink</button>
         </div>
         <div id="rinksList"></div>
     </div>
@@ -41,7 +41,7 @@
     <div id="Activities" class="tabcontent">
         <h2>Manage Activities</h2>
         <div class="form-group" id="activityForm">
-            <input type="hidden" id="activityEditId" value=""> <!-- For tracking editing state -->
+            <input type="hidden" id="activityEditId" value="">
             
             <label for="activityId">Activity ID:</label>
             <input type="text" id="activityId" placeholder="e.g., leiden-lions">
@@ -70,7 +70,7 @@
                         <option value="linkedin">LinkedIn</option>
                     </select>
                     <input type="text" id="socialUrl" placeholder="Profile URL">
-                    <button type="button" onclick="addSocialMedia()">Add</button>
+                    <button type="button" id="addSocialMediaBtn">Add</button>
                 </div>
             </div>
             
@@ -78,8 +78,8 @@
             <input type="text" id="activityLogo">
             
             <div class="button-group">
-                <button onclick="saveActivity()" id="saveActivityBtn">Add Activity</button>
-                <button onclick="cancelEdit()" id="cancelEditBtn" style="display: none;">Cancel</button>
+                <button id="saveActivityBtn">Add Activity</button>
+                <button id="cancelEditBtn" style="display: none;">Cancel</button>
             </div>
         </div>
         <div id="activitiesList"></div>
@@ -89,7 +89,7 @@
     <div id="Schedule" class="tabcontent">
         <h2>Weekly Schedule</h2>
         <div class="form-group">
-            <select id="rinkSelect" onchange="initializeScheduleGrid()"></select>
+            <select id="rinkSelect"></select>
         </div>
         <div style="height: calc(100vh - 200px); overflow-y: auto;">
             <div id="scheduleGrid" class="schedule-grid"></div>
@@ -111,8 +111,8 @@
         </div>
     
         <textarea id="jsonData"></textarea>
-        <button onclick="exportData()">Export</button>
-        <button onclick="importData()">Import</button>
+        <button id="exportBtn">Export</button>
+        <button id="importBtn">Import</button>
     </div>
 
     <script src="editor.js"></script>
