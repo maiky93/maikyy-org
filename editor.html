@@ -40,7 +40,9 @@
     <!-- Activities Tab -->
     <div id="Activities" class="tabcontent">
         <h2>Manage Activities</h2>
-        <div class="form-group">
+        <div class="form-group" id="activityForm">
+            <input type="hidden" id="activityEditId" value=""> <!-- For tracking editing state -->
+            
             <label for="activityId">Activity ID:</label>
             <input type="text" id="activityId" placeholder="e.g., leiden-lions">
             
@@ -51,12 +53,34 @@
             <input type="color" id="activityColor" value="#ff0000">
             
             <label for="activityDescription">Description:</label>
-            <input type="text" id="activityDescription">
+            <textarea id="activityDescription" rows="3"></textarea>
+            
+            <label for="activityWebsite">Website:</label>
+            <input type="url" id="activityWebsite" placeholder="https://example.com">
+            
+            <div id="socialMediaContainer">
+                <label>Social Media Accounts:</label>
+                <div class="social-media-list"></div>
+                <div class="social-media-add">
+                    <select id="socialPlatform">
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="twitter">Twitter</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="linkedin">LinkedIn</option>
+                    </select>
+                    <input type="text" id="socialUrl" placeholder="Profile URL">
+                    <button type="button" onclick="addSocialMedia()">Add</button>
+                </div>
+            </div>
             
             <label for="activityLogo">Logo URL:</label>
             <input type="text" id="activityLogo">
             
-            <button onclick="addActivity()">Add Activity</button>
+            <div class="button-group">
+                <button onclick="saveActivity()" id="saveActivityBtn">Add Activity</button>
+                <button onclick="cancelEdit()" id="cancelEditBtn" style="display: none;">Cancel</button>
+            </div>
         </div>
         <div id="activitiesList"></div>
     </div>

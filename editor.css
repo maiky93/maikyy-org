@@ -51,6 +51,80 @@ body {
     margin-bottom: 10px;
 }
 
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    resize: vertical;
+}
+
+.social-media-list {
+    margin-bottom: 10px;
+}
+
+.social-media-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 5px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.social-media-item span {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.social-media-add {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.social-media-add select,
+.social-media-add input {
+    padding: 5px;
+}
+
+.social-media-add button {
+    padding: 5px 10px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.activity-card {
+    position: relative;
+}
+
+.activity-actions {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: flex;
+    gap: 5px;
+}
+
+.social-links {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.social-link {
+    display: inline-block;
+    margin-right: 10px;
+    color: #666;
+    text-decoration: none;
+}
+
+.social-link:hover {
+    text-decoration: underline;
+}
+
 .card {
     border: 1px solid #ccc;
     padding: 10px;

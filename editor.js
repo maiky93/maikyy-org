@@ -85,6 +85,139 @@ function deleteActivity(id) {
     displayActivities();
 }
 
+function addSocialMedia() {
+    const platform = document.getElementById('socialPlatform').value;
+    const url = document.getElementById('socialUrl').value;
+    
+    if (url) {
+        const list = document.querySelector('.social-media-list');
+        const item = document.createElement('div');
+        item.className = 'social-media-item';
+        item.innerHTML = `
+            <span><strong>${platform}:</strong> ${url}</span>
+            <button onclick="this.parentElement.remove()">Remove</button>
+        `;
+        list.appendChild(item);
+        document.getElementById('socialUrl').value = '';
+    }
+}
+
+function getFormData() {
+    const socialMediaItems = document.querySelectorAll('.social-media-item');
+    const socialMedia = Array.from(socialMediaItems).map(item => {
+        const [platform, url] = item.querySelector('span').textContent.split(': ');
+        return {
+            platform: platform.replace(':', ''),
+            url: url
+        };
+    });
+
+    return {
+        id: document.getElementById('activityId').value,
+        name: document.getElementById('activityName').value,
+        color: document.getElementById('activityColor').value,
+        description: document.getElementById('activityDescription').value,
+        website: document.getElementById('activityWebsite').value,
+        socialMedia: socialMedia,
+        logo: document.getElementById('activityLogo').value
+    };
+}
+
+function setFormData(data) {
+    document.getElementById('activityId').value = data.id;
+    document.getElementById('activityName').value = data.name;
+    document.getElementById('activityColor').value = data.color;
+    document.getElementById('activityDescription').value = data.description || '';
+    document.getElementById('activityWebsite').value = data.website || '';
+    document.getElementById('activityLogo').value = data.logo || '';
+    
+    // Clear and rebuild social media list
+    const socialList = document.querySelector('.social-media-list');
+    socialList.innerHTML = '';
+    
+    if (data.socialMedia) {
+        data.socialMedia.forEach(social => {
+            const item = document.createElement('div');
+            item.className = 'social-media-item';
+            item.innerHTML = `
+                <span><strong>${social.platform}:</strong> ${social.url}</span>
+                <button onclick="this.parentElement.remove()">Remove</button>
+            `;
+            socialList.appendChild(item);
+        });
+    }
+}
+
+function clearActivityForm() {
+    document.getElementById('activityEditId').value = '';
+    document.getElementById('activityId').value = '';
+    document.getElementById('activityName').value = '';
+    document.getElementById('activityColor').value = '#ff0000';
+    document.getElementById('activityDescription').value = '';
+    document.getElementById('activityWebsite').value = '';
+    document.getElementById('activityLogo').value = '';
+    document.querySelector('.social-media-list').innerHTML = '';
+    
+    document.getElementById('saveActivityBtn').textContent = 'Add Activity';
+    document.getElementById('cancelEditBtn').style.display = 'none';
+    document.getElementById('activityId').disabled = false;
+}
+
+function editActivity(id) {
+    const activity = activities[id];
+    document.getElementById('activityEditId').value = id;
+    setFormData({...activity, id});
+    
+    document.getElementById('saveActivityBtn').textContent = 'Update Activity';
+    document.getElementById('cancelEditBtn').style.display = 'inline-block';
+    document.getElementById('activityId').disabled = true;
+    
+    // Scroll to form
+    document.getElementById('activityForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelEdit() {
+    clearActivityForm();
+}
+
+function saveActivity() {
+    const formData = getFormData();
+    const editId = document.getElementById('activityEditId').value;
+    
+    if (editId) {
+        // Update existing activity
+        activities[editId] = {
+            name: formData.name,
+            color: formData.color,
+            description: formData.description,
+            website: formData.website,
+            socialMedia: formData.socialMedia,
+            logo: formData.logo
+        };
+    } else {
+        // Add new activity
+        if (!formData.id) {
+            alert('Activity ID is required');
+            return;
+        }
+        if (activities[formData.id]) {
+            alert('Activity ID already exists');
+            return;
+        }
+        activities[formData.id] = {
+            name: formData.name,
+            color: formData.color,
+            description: formData.description,
+            website: formData.website,
+            socialMedia: formData.socialMedia,
+            logo: formData.logo
+        };
+    }
+    
+    displayActivities();
+    clearActivityForm();
+}
+
 function displayActivities() {
     const container = document.getElementById('activitiesList');
     container.innerHTML = '';
@@ -93,22 +226,31 @@ function displayActivities() {
         const div = document.createElement('div');
         div.className = 'card';
         div.style.borderLeft = `5px solid ${activity.color}`;
+        
+        let socialLinksHtml = '';
+        if (activity.socialMedia && activity.socialMedia.length > 0) {
+            socialLinksHtml = `
+                <div class="social-links">
+                    ${activity.socialMedia.map(social => 
+                        `<a href="${social.url}" class="social-link" target="_blank">${social.platform}</a>`
+                    ).join('')}
+                </div>
+            `;
+        }
+
         div.innerHTML = `
+            <div class="activity-actions">
+                <button onclick="editActivity('${id}')">Edit</button>
+                <button onclick="deleteActivity('${id}')">Delete</button>
+            </div>
             <strong>${activity.name}</strong> (${id})
             <br>${activity.description || ''}
+            ${activity.website ? `<br><a href="${activity.website}" target="_blank">Website</a>` : ''}
             ${activity.logo ? `<br><img src="${activity.logo}" alt="logo" style="max-height: 30px;">` : ''}
-            <button onclick="deleteActivity('${id}')">Delete</button>
+            ${socialLinksHtml}
         `;
         container.appendChild(div);
     });
-}
-
-function clearActivityForm() {
-    document.getElementById('activityId').value = '';
-    document.getElementById('activityName').value = '';
-    document.getElementById('activityColor').value = '#ff0000';
-    document.getElementById('activityDescription').value = '';
-    document.getElementById('activityLogo').value = '';
 }
 
 // Schedule management
