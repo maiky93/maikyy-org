@@ -10,38 +10,70 @@ let activeDropdown = null;
 // Load initial data
 async function loadInitialData() {
     try {
-        console.log('Attempting to load data from /data/schedule.json');
-        const response = await fetch('/data/schedule.json');
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        // Start with default data
+        const defaultData = {
+            rinks: {
+                "hockey_rink": {
+                    "name": "Binnenbaan",
+                    "description": "30x60 ijsvloer",
+                    "logo": ""
+                },
+                "speed_rink": {
+                    "name": "Rondbaan",
+                    "description": "250 meter ijsvloer",
+                    "logo": ""
+                }
+            },
+            activities: {},
+            weeklySchedule: {
+                "hockey_rink": {},
+                "speed_rink": {}
+            }
+        };
+
+        try {
+            const response = await fetch('/data/schedule.json');
+            if (response.ok) {
+                const data = await response.json();
+                rinks = data.rinks || defaultData.rinks;
+                activities = data.activities || defaultData.activities;
+                weeklySchedule = data.weeklySchedule || defaultData.weeklySchedule;
+            } else {
+                console.log('Using default data as fetch failed');
+                rinks = defaultData.rinks;
+                activities = defaultData.activities;
+                weeklySchedule = defaultData.weeklySchedule;
+            }
+        } catch (error) {
+            console.log('Using default data due to error:', error);
+            rinks = defaultData.rinks;
+            activities = defaultData.activities;
+            weeklySchedule = defaultData.weeklySchedule;
         }
-        
-        const data = await response.json();
-        console.log('Loaded data:', data);
-        
-        // Initialize our data structures
-        rinks = data.rinks || {};
-        activities = data.activities || {};
-        weeklySchedule = data.weeklySchedule || {};
-        
-        console.log('Initialized data structures:', { rinks, activities, weeklySchedule });
 
         // Update UI
-        console.log('Updating UI components...');
         displayRinks();
         displayActivities();
         updateRinkSelect();
         initializeScheduleGrid();
-        console.log('UI update complete');
+        
+        // Initialize event listeners after data is loaded
+        initializeEventListeners();
+        
     } catch (error) {
-        console.error('Error loading schedule data:', error);
-        // Initialize with empty data structures if load fails
-        rinks = {};
-        activities = {};
-        weeklySchedule = {};
+        console.error('Error in loadInitialData:', error);
     }
+}
+
+function initializeEventListeners() {
+    // Add event listeners
+    document.getElementById('addRinkBtn')?.addEventListener('click', addRink);
+    document.getElementById('addSocialMediaBtn')?.addEventListener('click', addSocialMedia);
+    document.getElementById('saveActivityBtn')?.addEventListener('click', saveActivity);
+    document.getElementById('cancelEditBtn')?.addEventListener('click', cancelEdit);
+    document.getElementById('rinkSelect')?.addEventListener('change', initializeScheduleGrid);
+    document.getElementById('exportBtn')?.addEventListener('click', exportData);
+    document.getElementById('importBtn')?.addEventListener('click', importData);
 }
 
 // Rink management
@@ -550,25 +582,15 @@ function openTab(evt, tabName) {
     }
 }
 
-// Initialize all event listeners
+// Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM Content Loaded');
     
-    // Wait for the data to load first
+    // Open default tab first
+    document.getElementById("defaultOpen")?.click();
+    
+    // Then load the data
     await loadInitialData();
-    console.log('Data loading complete');
-    
-    // Then initialize the UI
-    document.getElementById("defaultOpen").click();
-    
-    // Add event listeners
-    //document.getElementById('addRinkBtn').addEventListener('click', addRink);
-    //document.getElementById('addSocialMediaBtn').addEventListener('click', addSocialMedia);
-    //document.getElementById('saveActivityBtn').addEventListener('click', saveActivity);
-    //document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
-    //document.getElementById('rinkSelect').addEventListener('change', initializeScheduleGrid);
-    //document.getElementById('exportBtn').addEventListener('click', exportData);
-    //document.getElementById('importBtn').addEventListener('click', importData);
     
     console.log('Initialization complete');
 });
