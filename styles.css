@@ -116,21 +116,26 @@ body {
         0 -1px 0 #000,
         -1px 0 0 #000;
     position: absolute;
-    transition: transform 0.5s ease-in-out;
+    transition: all 1s ease-in-out;
     width: 100%;
-    will-change: transform;
-}
-
-.slide-entering {
+    opacity: 0;
     transform: translateX(100%);
+    will-change: transform, opacity;
 }
 
 .slide-visible {
     transform: translateX(0);
+    opacity: 1;
+}
+
+.slide-entering {
+    transform: translateX(100%);
+    opacity: 1;
 }
 
 .slide-exiting {
-    transform: translateX(-100%);
+    transform: translateX(-250%);
+    opacity: 0;
 }
 
 #schedule {

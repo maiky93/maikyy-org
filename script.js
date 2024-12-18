@@ -252,19 +252,16 @@ function createWeatherElements() {
     slide1.id = 'weather-slide-1';
     
     const slide2 = document.createElement('div');
-    slide2.className = 'weather-slide slide-entering';
+    slide2.className = 'weather-slide';  // Start without any transition class
     slide2.id = 'weather-slide-2';
     
     weatherDiv.appendChild(slide1);
     weatherDiv.appendChild(slide2);
 }
 
-function initWeatherDisplay() {
-    createWeatherElements();
-    updateWeatherDisplay();
-}
-
 let currentSlide = 1;
+let isAnimating = false;
+
 function updateWeatherDisplay() {
     const data = window.weatherData;
     if (!data) return;
@@ -291,48 +288,55 @@ function updateWeatherDisplay() {
         ${data.windGust ? ` (windstoten ${data.windGust} km/h)` : ''}
     `;
 
-    // Don't swap the content during updates unless explicitly told to
+    // Set initial content based on current slide
     if (currentSlide === 1) {
-        if (!slide1.dataset.content) {
-            slide1.innerHTML = tempDisplay;
-            slide1.dataset.content = 'temp';
-        }
-        if (!slide2.dataset.content) {
-            slide2.innerHTML = windDisplay;
-            slide2.dataset.content = 'wind';
-        }
+        slide1.innerHTML = tempDisplay;
+        slide2.innerHTML = windDisplay;
     } else {
-        if (!slide1.dataset.content) {
-            slide1.innerHTML = windDisplay;
-            slide1.dataset.content = 'wind';
-        }
-        if (!slide2.dataset.content) {
-            slide2.innerHTML = tempDisplay;
-            slide2.dataset.content = 'temp';
-        }
+        slide1.innerHTML = windDisplay;
+        slide2.innerHTML = tempDisplay;
     }
 }
 
 function toggleWeatherDisplay() {
+    if (isAnimating) return;
+    
     const slide1 = document.getElementById('weather-slide-1');
     const slide2 = document.getElementById('weather-slide-2');
     
     if (!slide1 || !slide2) return;
 
-    // Clear the content flags to allow content update on next animation
-    slide1.dataset.content = '';
-    slide2.dataset.content = '';
+    isAnimating = true;
 
+    // Set up animation end listener
+    const onAnimationComplete = () => {
+        if (currentSlide === 1) {
+            slide1.className = 'weather-slide';
+            slide2.className = 'weather-slide slide-visible';
+            currentSlide = 2;
+        } else {
+            slide1.className = 'weather-slide slide-visible';
+            slide2.className = 'weather-slide';
+            currentSlide = 1;
+        }
+        isAnimating = false;
+    };
+
+    // Add animation classes
     if (currentSlide === 1) {
         slide1.className = 'weather-slide slide-exiting';
-        slide2.className = 'weather-slide slide-visible';
-        currentSlide = 2;
-    } else {
-        slide1.className = 'weather-slide slide-visible';
         slide2.className = 'weather-slide slide-entering';
-        currentSlide = 1;
+    } else {
+        slide1.className = 'weather-slide slide-entering';
+        slide2.className = 'weather-slide slide-exiting';
     }
-    
+
+    // Wait for animation to complete
+    setTimeout(onAnimationComplete, 500); // Match this with CSS transition duration
+}
+
+function initWeatherDisplay() {
+    createWeatherElements();
     updateWeatherDisplay();
 }
 
@@ -475,6 +479,13 @@ function loadSettings() {
         })
 }
 
+//seconds to ms
+const seconds = s => s * 1000;
+//minutes to ms
+const minutes = m => m * 60 * 1000;
+//hours to ms
+const hours = h => h * 60 * 60 * 1000;
+
 // Initial calls
 connectWebSocket();
 loadSettings();
@@ -484,6 +495,6 @@ updateSchedule();
 scheduleBanner();
 
 // Set up intervals
-setInterval(updateDateTime, 1000);
-setInterval(getWeather, 1800000); // Update weather every 30 minutes
-setInterval(toggleWeatherDisplay, 200000); // Toggle weather display every 20 seconds
+setInterval(updateDateTime, seconds(1));
+setInterval(getWeather, minutes(30)); // Update weather every 30 minutes
+setInterval(toggleWeatherDisplay, seconds(20)); // Toggle weather display every 20 seconds
