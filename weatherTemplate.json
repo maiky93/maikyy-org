@@ -24,12 +24,12 @@
     },
     "visibility": 10000,
     "wind": {
-      "speed": 4.47,
-      "deg": 279,
-      "gust": 7.6
+      "speed": 4.47, // M/s
+      "deg": 279,   // 0/360=N etc.
+      "gust": 7.6   // windstoten? m/s
     },
     "rain": {
-      "1h": 0.13
+      "1h": 0.13  //mm in last hour??
     },
     "clouds": {
       "all": 100

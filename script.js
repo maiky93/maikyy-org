@@ -189,22 +189,153 @@ async function updateSchedule() {
     updateScheduleInterval(isCleaning ? {type: 3} : null);
 }
 
+const WIND_ARROWS = {
+    'N': '↑',
+    'NNE': '↗',
+    'NE': '↗',
+    'ENE': '↗',
+    'E': '→',
+    'ESE': '↘',
+    'SE': '↘',
+    'SSE': '↘',
+    'S': '↓',
+    'SSW': '↙',
+    'SW': '↙',
+    'WSW': '↙',
+    'W': '←',
+    'WNW': '↖',
+    'NW': '↖',
+    'NNW': '↖'
+};
+
+function getWindDirection(degrees) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 
+                       'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const index = Math.round(((degrees %= 360) < 0 ? degrees + 360 : degrees) / 22.5) % 16;
+    return directions[index];
+}
+
 async function getWeather() {
     try {
         const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${CITY},${COUNTRY}&units=metric&lang=nl&appid=${API_KEY}`);
         const data = await response.json();
         
-        const temp = Math.round(data.main.temp);
-        const feelsLike = Math.round(data.main.feels_like);
-        const description = data.weather[0].description;
+        // Store weather data globally
+        window.weatherData = {
+            temp: Math.round(data.main.temp),
+            feelsLike: Math.round(data.main.feels_like),
+            description: data.weather[0].description,
+            iconCode: data.weather[0].icon,
+            windSpeed: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
+            windDirection: getWindDirection(data.wind.deg),
+            windGust: data.wind.gust ? Math.round(data.wind.gust * 3.6) : null // Convert m/s to km/h
+        };
+
+        updateWeatherDisplay();
         
-        document.getElementById('weather').textContent = 
-            `${temp}°C (voelt als ${feelsLike}°C) - ${description}`;
+        // Initialize the weather display if it hasn't been done yet
+        if (!document.querySelector('.weather-slide')) {
+            initWeatherDisplay();
+        }
     } catch (error) {
         console.error('Error fetching weather:', error);
         document.getElementById('weather').textContent = '...';
     }
 }
+
+function createWeatherElements() {
+    const weatherDiv = document.getElementById('weather');
+    weatherDiv.innerHTML = ''; // Clear existing content
+    
+    const slide1 = document.createElement('div');
+    slide1.className = 'weather-slide slide-visible';
+    slide1.id = 'weather-slide-1';
+    
+    const slide2 = document.createElement('div');
+    slide2.className = 'weather-slide slide-entering';
+    slide2.id = 'weather-slide-2';
+    
+    weatherDiv.appendChild(slide1);
+    weatherDiv.appendChild(slide2);
+}
+
+function initWeatherDisplay() {
+    createWeatherElements();
+    updateWeatherDisplay();
+}
+
+let currentSlide = 1;
+function updateWeatherDisplay() {
+    const data = window.weatherData;
+    if (!data) return;
+
+    const slide1 = document.getElementById('weather-slide-1');
+    const slide2 = document.getElementById('weather-slide-2');
+    
+    if (!slide1 || !slide2) {
+        initWeatherDisplay();
+        return;
+    }
+
+    const tempDisplay = `
+        ${data.temp}°C (voelt als ${data.feelsLike}°C) - ${data.description}
+        <img 
+            src="https://openweathermap.org/img/wn/${data.iconCode}@2x.png" 
+            alt="weather icon" 
+            class="weather-icon"
+        >
+    `;
+
+    const windDisplay = `
+        Wind: ${WIND_ARROWS[data.windDirection]} ${data.windSpeed} km/h
+        ${data.windGust ? ` (windstoten ${data.windGust} km/h)` : ''}
+    `;
+
+    // Don't swap the content during updates unless explicitly told to
+    if (currentSlide === 1) {
+        if (!slide1.dataset.content) {
+            slide1.innerHTML = tempDisplay;
+            slide1.dataset.content = 'temp';
+        }
+        if (!slide2.dataset.content) {
+            slide2.innerHTML = windDisplay;
+            slide2.dataset.content = 'wind';
+        }
+    } else {
+        if (!slide1.dataset.content) {
+            slide1.innerHTML = windDisplay;
+            slide1.dataset.content = 'wind';
+        }
+        if (!slide2.dataset.content) {
+            slide2.innerHTML = tempDisplay;
+            slide2.dataset.content = 'temp';
+        }
+    }
+}
+
+function toggleWeatherDisplay() {
+    const slide1 = document.getElementById('weather-slide-1');
+    const slide2 = document.getElementById('weather-slide-2');
+    
+    if (!slide1 || !slide2) return;
+
+    // Clear the content flags to allow content update on next animation
+    slide1.dataset.content = '';
+    slide2.dataset.content = '';
+
+    if (currentSlide === 1) {
+        slide1.className = 'weather-slide slide-exiting';
+        slide2.className = 'weather-slide slide-visible';
+        currentSlide = 2;
+    } else {
+        slide1.className = 'weather-slide slide-visible';
+        slide2.className = 'weather-slide slide-entering';
+        currentSlide = 1;
+    }
+    
+    updateWeatherDisplay();
+}
+
 
 function updateDateTime() {
     const now = new Date();
@@ -243,7 +374,7 @@ const bannerMessages = [
 
 function getRandomTime() {
     // Random time between 10 and 40 minutes in milliseconds
-    return (Math.random() * (40 - 10) + 10) * 60 * 1000;
+    return (Math.random() * (20 - 10) + 10) * 60 * 1000;
 }
 
 function showBanner() {
@@ -348,10 +479,11 @@ function loadSettings() {
 connectWebSocket();
 loadSettings();
 updateDateTime();
-getWeather();
+getWeather();         // Keep this to fetch initial data
 updateSchedule();
 scheduleBanner();
 
 // Set up intervals
 setInterval(updateDateTime, 1000);
 setInterval(getWeather, 1800000); // Update weather every 30 minutes
+setInterval(toggleWeatherDisplay, 200000); // Toggle weather display every 20 seconds
