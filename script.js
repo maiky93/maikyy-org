@@ -56,6 +56,7 @@ async function populateImageContainer() {
         if (!response.ok) throw new Error('Failed to fetch directory contents');
         
         const files = await response.json();
+        console.log(files);
         
         // Filter for image files and create elements
         files.filter(file => file.name.match(/\.(gif|jpg|jpeg|png)$/i))
