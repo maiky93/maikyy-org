@@ -8,6 +8,8 @@ let isConnected = false;
 
 const fullscreenButton = document.getElementById('fullscreen-button');
 const bannerButton = document.getElementById('banner-button');
+const backgroundButton = document.getElementById('background-button');
+const resetBackgroundButton = document.getElementById('reset-background-button');
 
 fullscreenButton.addEventListener('click', () => {
     if (!document.fullscreenElement) {
@@ -27,6 +29,19 @@ document.addEventListener('fullscreenchange', () => {
 
 bannerButton.addEventListener('click', () => {
     showBanner(document.getElementById('banner-text').value);
+});
+
+const backgroundGif = document.getElementById('background-gif');
+
+backgroundButton.addEventListener('click', () => {
+    url = document.getElementById('background-url').value;
+    if (url) {
+        backgroundGif.src = url;
+    }
+});
+
+resetBackgroundButton.addEventListener('click', () => {
+    backgroundGif.src = "https://github.com/maiky93/maikyy-org/blob/main/media/gifs/winter-2540.gif?raw=true";
 });
 
 
