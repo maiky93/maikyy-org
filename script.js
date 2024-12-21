@@ -44,6 +44,38 @@ resetBackgroundButton.addEventListener('click', () => {
     backgroundGif.src = "https://github.com/maiky93/maikyy-org/blob/main/media/gifs/winter-2540.gif?raw=true";
 });
 
+async function populateImageContainer() {
+    const container = document.getElementById('image-scroll-container');
+    const owner = 'maiky93';
+    const repo = 'maikyy-org';
+    const path = 'media/gifs';
+    
+    try {
+        // Fetch repository contents using GitHub API
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
+        if (!response.ok) throw new Error('Failed to fetch directory contents');
+        
+        const files = await response.json();
+        
+        // Filter for image files and create elements
+        files.filter(file => file.name.match(/\.(gif|jpg|jpeg|png)$/i))
+             .forEach(file => {
+                 const img = document.createElement('img');
+                 img.src = `${file.download_url}`;  // GitHub raw URL
+                 img.alt = file.name;
+                 
+                 img.addEventListener('click', () => {
+                     changeBackground(img.src);
+                 });
+                 
+                 container.appendChild(img);
+             });
+    } catch (error) {
+        console.error('Error loading images:', error);
+        container.innerHTML = 'Error loading images';
+    }
+}
+
 
 const activityDetails = {
     0: { name: "Openen", color: '#8cc5ff' },
@@ -526,12 +558,13 @@ const minutes = m => m * 60 * 1000;
 const hours = h => h * 60 * 60 * 1000;
 
 // Initial calls
-connectWebSocket();
+//connectWebSocket();
 loadSettings();
 updateDateTime();
 getWeather();         // Keep this to fetch initial data
 updateSchedule();
 scheduleBanner();
+document.addEventListener('DOMContentLoaded', populateImageContainer);
 
 // Set up intervals
 setInterval(updateDateTime, seconds(1));
