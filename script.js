@@ -6,6 +6,30 @@ let ws;
 let isConnected = false;
 
 
+const fullscreenButton = document.getElementById('fullscreen-button');
+const bannerButton = document.getElementById('banner-button');
+
+fullscreenButton.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+});
+
+document.addEventListener('fullscreenchange', () => {
+    fullscreenButton.textContent = document.fullscreenElement 
+    ? 'Verlaat Volledig Scherm' 
+    : 'Volledig Scherm';
+});
+
+bannerButton.addEventListener('click', () => {
+    showBanner(document.getElementById('banner-text').value);
+});
+
+
 const activityDetails = {
     0: { name: "Openen", color: '#8cc5ff' },
     1: { name: "Afsluiten", color: '#8affb7' },
@@ -381,11 +405,11 @@ function getRandomTime() {
     return (Math.random() * (20 - 10) + 10) * 60 * 1000;
 }
 
-function showBanner() {
+function showBanner(text) {
     const banner = document.getElementById('sliding-banner');
-    const randomMessage = bannerMessages[Math.floor(Math.random() * bannerMessages.length)];
+    const bannerText = text || bannerMessages[Math.floor(Math.random() * bannerMessages.length)];
     
-    banner.textContent = randomMessage;
+    banner.textContent = bannerText;
     banner.classList.add('sliding');
 
     // Remove the sliding class after animation completes
