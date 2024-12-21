@@ -153,6 +153,10 @@ function stopSlideshow() {
     }
 }
 
+function changeBackground(url) {
+    backgroundGif.src = url;
+}
+
 // Handle autoplay toggle
 document.getElementById('image-auto-play').addEventListener('change', function() {
     if (this.checked) {
