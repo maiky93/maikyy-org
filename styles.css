@@ -309,27 +309,29 @@ body {
     text-align: center;
 }
 
-#scroll-container {
+#image-scroll-container {
     position: absolute;
-    width: 718px;
-    height: 200px; /* Adjust as needed */
+    width: 708px;
+    height: 190px; /* Adjust as needed */
     overflow-y: auto;
     background: rgb(34, 34, 34);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
     left: 25px;
     top: 537px;
+    padding: 10px;
 }
 
-.scroll-container img {
-    width: 160px;  /* Slightly smaller than container to account for padding */
-    height: auto;
+#image-scroll-container img {
+    width: 154px;  /* 10% of 768 */
+    height: 102px; /* 10% of 512 */
     cursor: pointer;
     border-radius: 5px;
     transition: transform 0.2s;
+    object-fit: cover;  /* This ensures images maintain aspect ratio without distortion */
 }
 
-.scroll-container img:hover {
+#image-scroll-container img:hover {
     transform: scale(1.05);
 }

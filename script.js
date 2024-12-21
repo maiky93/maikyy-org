@@ -66,7 +66,7 @@ async function populateImageContainer() {
                  img.alt = file.name;
                  
                  img.addEventListener('click', () => {
-                     changeBackground(img.src);
+                    backgroundGif.src = img.src;
                  });
                  
                  container.appendChild(img);
