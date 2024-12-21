@@ -53,7 +53,7 @@ body {
 }
 
 #clock {
-    bottom: 120px;
+    bottom: 115px;
     font-size: 72px;
 }
 
@@ -88,7 +88,7 @@ body {
 
 /* Update weather and slides styling */
 #weather {
-    bottom: 65px;
+    bottom: 35px;
     font-size: 36px;
     position: absolute;
     left: 10px;
