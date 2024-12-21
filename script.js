@@ -5,6 +5,11 @@ const COUNTRY = 'NL';
 let ws;
 let isConnected = false;
 
+// Global variables to manage the slideshow
+let images = []; // Will store our image list
+let currentImageIndex = 0;
+let slideshowInterval = null;
+
 
 const fullscreenButton = document.getElementById('fullscreen-button');
 const bannerButton = document.getElementById('banner-button');
@@ -46,37 +51,116 @@ resetBackgroundButton.addEventListener('click', () => {
 
 async function populateImageContainer() {
     const container = document.getElementById('image-scroll-container');
+    if (!container) {
+        console.error('Could not find image container element');
+        return;
+    }
+
     const owner = 'maiky93';
     const repo = 'maikyy-org';
     const path = 'media/gifs';
     
     try {
-        // Fetch repository contents using GitHub API
         const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
         if (!response.ok) throw new Error('Failed to fetch directory contents');
         
-        const files = await response.json();
-        console.log(files);
+        images = (await response.json()).filter(file => file.name.match(/\.(gif|jpg|jpeg|png)$/i));
         
-        // Filter for image files and create elements
-        files.filter(file => file.name.match(/\.(gif|jpg|jpeg|png)$/i))
-             .forEach(file => {
-                 const img = document.createElement('img');
-                 img.src = `${file.download_url}`;  // GitHub raw URL
-                 img.alt = file.name;
-                 
-                 img.addEventListener('click', () => {
-                    backgroundGif.src = img.src;
-                 });
-                 
-                 container.appendChild(img);
-             });
+        // Create image elements in container
+        images.forEach(file => {
+            const img = document.createElement('img');
+            img.src = file.download_url;
+            img.alt = file.name;
+            
+            img.addEventListener('click', () => {
+                backgroundGif.src = img.src;
+                // Reset current index to this image if in sequential mode
+                if (!document.getElementById('image-shuffle').checked) {
+                    currentImageIndex = images.findIndex(i => i.download_url === img.src);
+                }
+            });
+            
+            container.appendChild(img);
+        });
+
+        // Initialize time value display
+        document.getElementById('image-time-value').textContent = 
+            document.getElementById('image-time').value;
+
     } catch (error) {
         console.error('Error loading images:', error);
-        container.innerHTML = 'Error loading images';
+        if (container) {
+            container.innerHTML = 'Error loading images';
+        }
     }
 }
 
+
+
+//image autoplay functions
+//
+//
+
+// Update the time display when slider moves
+document.getElementById('image-time').addEventListener('input', function() {
+    const timeValue = document.getElementById('image-time-value');
+    timeValue.textContent = this.value;
+    
+    // If autoplay is running, restart it with new duration
+    if (document.getElementById('image-auto-play').checked) {
+        startSlideshow();
+    }
+});
+
+// Function to get next image URL
+function getNextImageUrl() {
+    if (document.getElementById('image-shuffle').checked) {
+        // Random mode
+        return images[Math.floor(Math.random() * images.length)].download_url;
+    } else {
+        // Sequential mode
+        const url = images[currentImageIndex].download_url;
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+        return url;
+    }
+}
+
+// Function to start the slideshow
+function startSlideshow() {
+    // Clear any existing interval
+    if (slideshowInterval) {
+        clearInterval(slideshowInterval);
+    }
+    
+    // Get duration from slider (convert hours to milliseconds)
+    const duration = document.getElementById('image-time').value * 60 * 60 * 1000;
+    
+    // Start new interval
+    slideshowInterval = setInterval(() => {
+        const nextUrl = getNextImageUrl();
+        changeBackground(nextUrl);
+    }, duration);
+    
+    // Immediately show first image
+    changeBackground(getNextImageUrl());
+}
+
+// Function to stop the slideshow
+function stopSlideshow() {
+    if (slideshowInterval) {
+        clearInterval(slideshowInterval);
+        slideshowInterval = null;
+    }
+}
+
+// Handle autoplay toggle
+document.getElementById('image-auto-play').addEventListener('change', function() {
+    if (this.checked) {
+        startSlideshow();
+    } else {
+        stopSlideshow();
+    }
+});
 
 const activityDetails = {
     0: { name: "Openen", color: '#8cc5ff' },
